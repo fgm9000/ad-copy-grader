@@ -117,4 +117,4 @@ Executed via OpenRouter (`google/gemini-2.5-flash` by default) in JSON mode:
 ## 6. Engineering Governance & Release Criteria
 
 1. **Conventional Commits & Bilingual Documentation:** All commits, branch names, and source code identifiers are written in English following Conventional Commits; all architectural documentation, PRD, ADRs, and README files are maintained in both English (`en`) and Brazilian Portuguese (`pt-BR`).
-2. **Automated Quality Ratchet & CI Gates:** Every change must pass `ruff` (lint + format), `mypy --strict`, `pytest` (`>= 90%` coverage), `gitleaks`, the 3-column Promptfoo pipeline check, and the zero-regression quality ratchet (`quality_check.py`) before merging to `main`.
+2. **Automated Quality Ratchet & CI Gates:** Every change must pass `ruff` (lint + format + `flake8-bandit` `S` rules), `mypy --strict`, `pytest` (`>= 90%` coverage), `semgrep` (`p/owasp-top-ten`, `p/python`, `p/fastapi`), `codeql` (GitHub CodeQL semantic taint analysis for Python), `gitleaks`, the 3-column Promptfoo pipeline check, and the zero-regression quality ratchet (`quality_check.py`) before merging to `main`.

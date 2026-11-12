@@ -53,6 +53,16 @@ jobs:
         env:
           FAKE_MODEL: "1"
 
+  sast-owasp:
+    name: SAST (Semgrep OWASP Top 10 & FastAPI)
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Semgrep OWASP Top 10 + Python + FastAPI rulesets
+        run: semgrep scan --config p/owasp-top-ten --config p/python --config p/fastapi --error --metrics=off src/
+
   secrets:
     runs-on: ubuntu-latest
     steps:

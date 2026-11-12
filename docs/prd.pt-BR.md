@@ -118,4 +118,4 @@ Executado via OpenRouter (`google/gemini-2.5-flash` por padrão) em modo JSON, s
 ## 6. Governança de Engenharia e Critérios de Release
 
 1. **Conventional Commits e Documentação Bilíngue:** Commits, nomes de branches e identificadores de código seguem padrão em inglês (Conventional Commits); toda a documentação arquitetural, PRD, ADRs e README é mantida em par bilíngue (`en` e `pt-BR`).
-2. **Catraca de Qualidade Automatizada e Gates de CI:** Toda alteração deve passar por `ruff` (lint + format), `mypy --strict`, `pytest` (cobertura `>= 90%`), `gitleaks`, suíte de 3 colunas do Promptfoo e catraca de regressão zero (`quality_check.py`) antes do merge na `main`.
+2. **Catraca de Qualidade Automatizada e Gates de CI:** Toda alteração deve passar por `ruff` (lint + format + regras `S` / `flake8-bandit`), `mypy --strict`, `pytest` (cobertura `>= 90%`), `semgrep` (`p/owasp-top-ten`, `p/python`, `p/fastapi`), `codeql` (análise semântica de fluxo de dados do GitHub CodeQL para Python), `gitleaks`, suíte de 3 colunas do Promptfoo e catraca de regressão zero (`quality_check.py`) antes do merge na `main`.
