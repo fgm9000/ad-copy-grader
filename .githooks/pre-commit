@@ -1,0 +1,8 @@
+#!/bin/sh
+# Blocks commits containing secrets in staged files (gitleaks).
+# Enable once per clone: git config core.hooksPath .githooks
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks not found. Install it (Windows: scoop install gitleaks) or the commit is blocked."
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact --no-banner
