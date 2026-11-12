@@ -1,0 +1,31 @@
+name: Live Promptfoo Evals
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "OpenRouter model name for evaluation"
+        required: false
+        default: "google/gemini-2.5-flash"
+        type: string
+
+jobs:
+  eval-live:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: uv sync --frozen
+      - name: Run Live Promptfoo Evaluation
+        run: uv run npx --yes promptfoo@0.109.0 eval -c evals/promptfooconfig.yaml --no-cache -o promptfoo-live-results.json
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LLM_MODEL: ${{ inputs.model || 'google/gemini-2.5-flash' }}
+      - name: Upload Evaluation Results Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-live-results
+          path: promptfoo-live-results.json

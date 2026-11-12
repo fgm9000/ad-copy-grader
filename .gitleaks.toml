@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlist for test fixtures and example environment configuration"
+paths = [
+    '''(?i)tests/fixtures/.*''',
+    '''(?i)\.env\.example''',
+]
