@@ -20,7 +20,7 @@ jobs:
           node-version: "20"
       - run: uv sync --frozen
       - name: Run Live Promptfoo Evaluation
-        run: uv run npx --yes promptfoo@0.109.0 eval -c evals/promptfooconfig.yaml --no-cache -o promptfoo-live-results.json
+        run: uv run npx --yes promptfoo@0.109.0 eval -c evals/promptfooconfig.yaml --no-cache --no-write -o promptfoo-live-results.json
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           LLM_MODEL: ${{ inputs.model || 'google/gemini-2.5-flash' }}

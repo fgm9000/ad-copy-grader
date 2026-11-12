@@ -10,6 +10,8 @@ from ad_copy_grader.llm import (
     LlmClientError,
     ModelClient,
     ModelReply,
+    _extract_ad_payload,
+    _price_digits_in_lp,
 )
 from ad_copy_grader.models import AdInput
 from evals.cases import assert_case, build_eval_cases, get_tests
@@ -210,3 +212,12 @@ def test_assert_case_evaluator() -> None:
     result = assert_case(output, context)
     assert result["pass"] is True
     assert result["score"] == 1.0
+
+
+def test_llm_helper_edge_cases() -> None:
+    """Test _extract_ad_payload without payload tags and _price_digits_in_lp branches."""
+    assert _extract_ad_payload([]) is None
+    assert _extract_ad_payload([{"role": "user", "content": "no tags here"}]) is None
+    assert _price_digits_in_lp("$899", "Implants starting at $899 today.") is True
+    assert _price_digits_in_lp("$499", "Implants starting at $899 today.") is False
+    assert _price_digits_in_lp("free", "Implants starting at $899 today.") is False
