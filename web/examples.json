@@ -1,0 +1,684 @@
+[
+  {
+    "id": "clean_10_of_10",
+    "label": {
+      "en": "Clean Compliant RSA (10/10)",
+      "pt": "Anúncio Conforme e Limpo (10/10)"
+    },
+    "description": {
+      "en": "Fully compliant 15-headline RSA with verified primary service, compliant lengths, and strong CTAs.",
+      "pt": "Anúncio RSA com 15 títulos em total conformidade, serviços verificados e CTAs claras."
+    },
+    "input": {
+      "en": {
+        "headlines": [
+          "Dental Implants Clinic",
+          "Top Dental Implants",
+          "Best Dental Implants Care",
+          "Experienced Surgeons",
+          "Modern Dentistry",
+          "Sedation Options Available",
+          "Digital Smile Design",
+          "Restore Your Smile Today",
+          "Flexible Payment Plans",
+          "Cutting-Edge 3D Scans",
+          "Natural-Looking Results",
+          "Full Arch Replacements",
+          "Trusted Dental Clinic",
+          "Book Your Evaluation Today",
+          "Convenient Downtown Clinic"
+        ],
+        "descriptions": [
+          "Restore your smile with permanent dental implants. Schedule your consultation today.",
+          "Experienced oral surgeons, 3D digital imaging, and comfortable sedation options available."
+        ],
+        "path1": "implants",
+        "path2": "austin",
+        "final_url": "https://example.com/dental-implants",
+        "primary_service": "Dental Implants",
+        "lp_context": "Specialist dental implant clinic. Single tooth and full arch implants. Comprehensive initial consultation available.",
+        "lang": "en"
+      },
+      "pt": {
+        "headlines": [
+          "Implante Dentário em SP",
+          "Clínica de Implante Dentário",
+          "Implante Dentário Moderno",
+          "Cirurgiões Credenciados",
+          "Recupere Seu Sorriso",
+          "Sedação Consciente Segura",
+          "Planejamento Digital 3D",
+          "Atendimento Humanizado",
+          "Opções de Parcelamento",
+          "Tecnologia Odontológica",
+          "Resultados Naturais",
+          "Prótese Sobre Implante",
+          "Consultório Especializado",
+          "Agende Sua Avaliação Hoje",
+          "Unidade de Fácil Acesso"
+        ],
+        "descriptions": [
+          "Recupere seu sorriso com implante dentário seguro. Agende sua avaliação conosco hoje.",
+          "Cirurgiões experientes, tomografia 3D e opções de sedação consciente para seu conforto."
+        ],
+        "path1": "implantes",
+        "path2": "sp",
+        "final_url": "https://example.com/implante-dentario",
+        "primary_service": "Implante Dentário",
+        "lp_context": "Clínica de implante dentário especializada em reabilitação oral. Agende sua avaliação.",
+        "lang": "pt"
+      }
+    },
+    "result": {
+      "en": {
+        "score": 100,
+        "grade_10": 10.0,
+        "passed": true,
+        "issues": [],
+        "suggestions": [],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      },
+      "pt": {
+        "score": 100,
+        "grade_10": 10.0,
+        "passed": true,
+        "issues": [],
+        "suggestions": [],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      }
+    },
+    "dropped_issues": {
+      "en": [],
+      "pt": []
+    }
+  },
+  {
+    "id": "unverified_price_a01",
+    "label": {
+      "en": "Unverified Price Claim (A01)",
+      "pt": "Preço Não Confirmado na LP (A01)"
+    },
+    "description": {
+      "en": "Headline claims an unverified offer ($499) conflicting with landing page ($899), triggering A01 and a validated rewrite.",
+      "pt": "Título anuncia preço não verificado (R$ 499) divergente da landing page (R$ 390), acionando A01 e reescrita validada."
+    },
+    "input": {
+      "en": {
+        "headlines": [
+          "Emergency Plumbing Austin",
+          "Plumbing Starting At $499",
+          "Top Emergency Plumbing",
+          "Best Emergency Plumbing Care",
+          "Licensed Plumbers Near You",
+          "Fast 24/7 Leak Repair",
+          "Local Austin Technicians",
+          "Water Heater Replacement",
+          "Drain Cleaning Experts",
+          "No Hidden Dispatch Fees",
+          "Rapid Response Team",
+          "Affordable Pipe Services",
+          "Call Austin Plumbers Today",
+          "Trusted Residential Repairs",
+          "Book Immediate Service"
+        ],
+        "descriptions": [
+          "Need urgent plumbing repairs in Austin? Call our licensed technicians right now.",
+          "Comprehensive pipe leak fixes, drain cleaning, and emergency fixture replacements."
+        ],
+        "path1": "plumbing",
+        "path2": "austin",
+        "final_url": "https://example.com/emergency-plumbing",
+        "primary_service": "Emergency Plumbing",
+        "lp_context": "Premier emergency plumbing dispatch in Austin. Standard dispatch rate is $899. Licensed plumbers available 24/7.",
+        "lang": "en"
+      },
+      "pt": {
+        "headlines": [
+          "Encanador 24 Horas em SP",
+          "Atendimento a Partir R$ 499",
+          "Serviço de Encanador 24 Horas",
+          "Melhor Encanador 24 Horas",
+          "Técnicos em Encanamento",
+          "Reparo Rápido de Vazamentos",
+          "Caça Vazamentos Preciso",
+          "Desentupimento Residencial",
+          "Troca de Tubulações em SP",
+          "Sem Taxas Escondidas",
+          "Chegada Rápida no Local",
+          "Preços Transparentes",
+          "Ligue Para Nossos Técnicos",
+          "Atendimento Para Empresas",
+          "Chame Nossa Equipe Hoje"
+        ],
+        "descriptions": [
+          "Precisa de encanador urgente em São Paulo? Ligue para nossos técnicos certificados agora.",
+          "Conserto de vazamentos, desentupimento e substituição rápida de canos com garantia."
+        ],
+        "path1": "encanador",
+        "path2": "sp",
+        "final_url": "https://example.com/encanador-24h",
+        "primary_service": "Encanador 24 Horas",
+        "lp_context": "Serviços de encanamento de urgência em São Paulo. Taxa padrão de atendimento a partir de R$ 390. Profissionais qualificados.",
+        "lang": "pt"
+      }
+    },
+    "result": {
+      "en": {
+        "score": 85,
+        "grade_10": 8.5,
+        "passed": false,
+        "issues": [
+          {
+            "rule_id": "A01",
+            "severity": "error",
+            "message": "Price or offer '$499' in headline not verified in landing page.",
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "source": "llm"
+          }
+        ],
+        "suggestions": [
+          {
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "original": "Plumbing Starting At $499",
+            "suggested": "Emergency Plumbing Today",
+            "reason": "Removes unverified price claim."
+          }
+        ],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      },
+      "pt": {
+        "score": 85,
+        "grade_10": 8.5,
+        "passed": false,
+        "issues": [
+          {
+            "rule_id": "A01",
+            "severity": "error",
+            "message": "Preço ou oferta 'R$ 499' no título não confirmado na landing page.",
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "source": "llm"
+          }
+        ],
+        "suggestions": [
+          {
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "original": "Atendimento a Partir R$ 499",
+            "suggested": "Encanador 24 Horas Hoje",
+            "reason": "Remove preço não verificado na página."
+          }
+        ],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      }
+    },
+    "dropped_issues": {
+      "en": [],
+      "pt": []
+    }
+  },
+  {
+    "id": "verified_price_authority_filter",
+    "label": {
+      "en": "Verified Price (Code Authority Filter)",
+      "pt": "Preço Verificado (Filtro de Autoridade)"
+    },
+    "description": {
+      "en": "Headline price ($899 / R$ 390) exists in LP context. Raw LLM emitted an A01 false positive, which the server Code Authority Filter stripped.",
+      "pt": "O preço no anúncio está na landing page. O LLM gerou um falso positivo (A01), que o Filtro de Autoridade determinístico descartou."
+    },
+    "input": {
+      "en": {
+        "headlines": [
+          "Dental Implants Clinic",
+          "Dental Implants From $899",
+          "Top Dental Implants",
+          "Best Dental Implants Care",
+          "Experienced Surgeons",
+          "Modern Dentistry",
+          "Sedation Options Available",
+          "Digital Smile Design",
+          "Restore Your Smile Today",
+          "Flexible Payment Plans",
+          "Cutting-Edge 3D Scans",
+          "Natural-Looking Results",
+          "Full Arch Replacements",
+          "Trusted Dental Clinic",
+          "Book Your Evaluation Today"
+        ],
+        "descriptions": [
+          "Restore your smile with permanent dental implants. Schedule your consultation today.",
+          "Experienced oral surgeons, 3D digital imaging, and comfortable sedation options available."
+        ],
+        "path1": "implants",
+        "path2": "austin",
+        "final_url": "https://example.com/dental-implants",
+        "primary_service": "Dental Implants",
+        "lp_context": "Specialist dental implant clinic. Single tooth implants starting from $899 including initial scan. Consultation available.",
+        "lang": "en"
+      },
+      "pt": {
+        "headlines": [
+          "Implante Dentário em SP",
+          "Implantes a Partir de R$ 390",
+          "Clínica de Implante Dentário",
+          "Implante Dentário Moderno",
+          "Cirurgiões Credenciados",
+          "Recupere Seu Sorriso",
+          "Sedação Consciente Segura",
+          "Planejamento Digital 3D",
+          "Atendimento Humanizado",
+          "Opções de Parcelamento",
+          "Tecnologia Odontológica",
+          "Resultados Naturais",
+          "Prótese Sobre Implante",
+          "Consultório Especializado",
+          "Agende Sua Avaliação Hoje"
+        ],
+        "descriptions": [
+          "Recupere seu sorriso com implante dentário seguro. Agende sua avaliação conosco hoje.",
+          "Cirurgiões experientes, tomografia 3D e opções de sedação consciente para seu conforto."
+        ],
+        "path1": "implantes",
+        "path2": "sp",
+        "final_url": "https://example.com/implante-dentario",
+        "primary_service": "Implante Dentário",
+        "lp_context": "Clínica especializada em reabilitação oral. Implante unitário com coroa a partir de R$ 390 mensais na avaliação.",
+        "lang": "pt"
+      }
+    },
+    "result": {
+      "en": {
+        "score": 100,
+        "grade_10": 10.0,
+        "passed": true,
+        "issues": [],
+        "suggestions": [
+          {
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "original": "Dental Implants From $899",
+            "suggested": "Dental Implants Today",
+            "reason": "Removes unverified price claim."
+          }
+        ],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      },
+      "pt": {
+        "score": 100,
+        "grade_10": 10.0,
+        "passed": true,
+        "issues": [],
+        "suggestions": [
+          {
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "original": "Implantes a Partir de R$ 390",
+            "suggested": "Implantes Dentários Hoje",
+            "reason": "Remove preço não verificado na página."
+          }
+        ],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      }
+    },
+    "dropped_issues": {
+      "en": [
+        {
+          "rule_id": "A01",
+          "severity": "error",
+          "message": "Price or offer '$899' in headline not verified in landing page.",
+          "location": {
+            "field": "headline",
+            "index": 1
+          },
+          "source": "llm"
+        }
+      ],
+      "pt": [
+        {
+          "rule_id": "A01",
+          "severity": "error",
+          "message": "Preço ou oferta 'R$ 390' no título não confirmado na landing page.",
+          "location": {
+            "field": "headline",
+            "index": 1
+          },
+          "source": "llm"
+        }
+      ]
+    }
+  },
+  {
+    "id": "clinical_guarantee_plus_code_errors",
+    "label": {
+      "en": "Clinical Guarantee & Code Errors (Hybrid)",
+      "pt": "Garantia Clínica e Erros de Código (Híbrido)"
+    },
+    "description": {
+      "en": "Demonstrates hybrid grading: deterministic code errors (D04 length >30, D08 duplicate) alongside LLM semantic warning (A03 medical guarantee) with validated rewrite.",
+      "pt": "Demonstra auditoria híbrida: regras determinísticas (D04 >30 caracteres, D08 duplicado) e aviso semântico LLM (A03 promessa médica) com sugestão validada."
+    },
+    "input": {
+      "en": {
+        "headlines": [
+          "Laser Eye Surgery Clinic",
+          "100% Guaranteed Results",
+          "Comprehensive Laser Vision Correction Center",
+          "Laser Eye Surgery Clinic",
+          "Top Laser Eye Surgery Care",
+          "Best Laser Eye Surgery Doctors",
+          "Modern Blade-Free LASIK",
+          "Rapid Visual Recovery",
+          "Experienced Eye Surgeons",
+          "Free LASIK Consultation",
+          "Advanced Vision Technology",
+          "Affordable Financing Plans",
+          "Downtown Laser Vision Care",
+          "Schedule An Exam Today",
+          "Clear Vision Without Glasses"
+        ],
+        "descriptions": [
+          "Transform your vision with blade-free LASIK. Schedule your consultation today.",
+          "Experienced eye surgeons, advanced laser technology, and rapid visual recovery."
+        ],
+        "path1": "vision",
+        "path2": "lasik",
+        "final_url": "https://example.com/laser-eye-surgery",
+        "primary_service": "Laser Eye Surgery",
+        "lp_context": "Advanced laser eye surgery and vision correction center. Comprehensive exams available.",
+        "lang": "en"
+      },
+      "pt": {
+        "headlines": [
+          "Implantes Dentários em SP",
+          "Implante 100% Garantido",
+          "Reabilitação Oral Avançada e Implantes Dentários",
+          "Implantes Dentários em SP",
+          "Melhores Implantes em SP",
+          "Clínica de Implantes",
+          "Cirurgia Segura e Conforto",
+          "Recuperação Rápida",
+          "Cirurgiões Credenciados",
+          "Avaliação Completa Hoje",
+          "Tecnologia Digital 3D",
+          "Opções de Parcelamento",
+          "Consultório Especializado",
+          "Agende Sua Avaliação Hoje",
+          "Recupere Seu Sorriso"
+        ],
+        "descriptions": [
+          "Recupere seu sorriso com implantes de alta precisão. Agende sua avaliação conosco hoje.",
+          "Cirurgiões experientes, tomografia 3D e opções de sedação consciente para seu conforto."
+        ],
+        "path1": "implantes",
+        "path2": "sp",
+        "final_url": "https://example.com/implantes",
+        "primary_service": "Implantes",
+        "lp_context": "Clínica de reabilitação oral e implantes dentários. Avaliação inicial disponível.",
+        "lang": "pt"
+      }
+    },
+    "result": {
+      "en": {
+        "score": 65,
+        "grade_10": 6.5,
+        "passed": false,
+        "issues": [
+          {
+            "rule_id": "D04",
+            "severity": "error",
+            "message": "Headline exceeds the 30-character limit.",
+            "location": {
+              "field": "headline",
+              "index": 2
+            },
+            "source": "code"
+          },
+          {
+            "rule_id": "D08",
+            "severity": "error",
+            "message": "Duplicate headline detected.",
+            "location": {
+              "field": "headline",
+              "index": 3
+            },
+            "source": "code"
+          },
+          {
+            "rule_id": "A03",
+            "severity": "warning",
+            "message": "Absolute outcome guarantee or regulated promise in headline.",
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "source": "llm"
+          }
+        ],
+        "suggestions": [
+          {
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "original": "100% Guaranteed Results",
+            "suggested": "Trusted Laser Eye Surgery Care",
+            "reason": "Replaces absolute guarantee with compliant phrasing."
+          }
+        ],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      },
+      "pt": {
+        "score": 65,
+        "grade_10": 6.5,
+        "passed": false,
+        "issues": [
+          {
+            "rule_id": "D04",
+            "severity": "error",
+            "message": "O título excede o limite de 30 caracteres.",
+            "location": {
+              "field": "headline",
+              "index": 2
+            },
+            "source": "code"
+          },
+          {
+            "rule_id": "D08",
+            "severity": "error",
+            "message": "Título duplicado detectado.",
+            "location": {
+              "field": "headline",
+              "index": 3
+            },
+            "source": "code"
+          },
+          {
+            "rule_id": "A03",
+            "severity": "warning",
+            "message": "Promessa absoluta ou garantia de resultado no título.",
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "source": "llm"
+          }
+        ],
+        "suggestions": [
+          {
+            "location": {
+              "field": "headline",
+              "index": 1
+            },
+            "original": "Implante 100% Garantido",
+            "suggested": "Especialistas em Implantes",
+            "reason": "Substitui garantia absoluta por afirmação adequada."
+          }
+        ],
+        "discarded_suggestions_count": 0,
+        "rules_checked": [
+          "D01",
+          "D02",
+          "D03",
+          "D04",
+          "D05",
+          "D06",
+          "D07",
+          "D08",
+          "D09",
+          "D10",
+          "D11",
+          "A01",
+          "A02",
+          "A03"
+        ],
+        "model": "fake-model",
+        "degraded_reason": null
+      }
+    },
+    "dropped_issues": {
+      "en": [],
+      "pt": []
+    }
+  }
+]

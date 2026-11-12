@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ad Copy Grader — Hybrid Google Ads RSA Auditor</title>
+  <meta name="description" content="Hybrid deterministic code rules (D01-D11) and semantic LLM evaluation (A01-A03) for Google Ads Responsive Search Ads with server authority filtering.">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="min-h-full flex flex-col font-sans antialiased text-slate-800 bg-slate-50">
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+            AG
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="text-lg font-bold text-slate-900 tracking-tight" data-i18n="appTitle">Ad Copy Grader</h1>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                v0.1.0
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 hidden sm:block" data-i18n="appSubtitle">
+              Hybrid Deterministic &amp; LLM Google Ads RSA Auditor
+            </p>
+          </div>
+        </div>
+
+        <!-- Controls: API endpoint config & Language toggle -->
+        <div class="flex items-center space-x-3">
+          <!-- API Config Modal / Popover Button -->
+          <div class="relative">
+            <button id="apiConfigBtn" type="button" class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-medium text-slate-700 shadow-sm transition">
+              <span id="apiStatusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="apiStatusText" data-i18n="apiConnected">Live API</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- API URL Dropdown Panel -->
+            <div id="apiConfigPanel" class="hidden absolute right-0 mt-2 w-80 sm:w-96 p-4 rounded-xl bg-white border border-slate-200 shadow-xl z-50">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2" data-i18n="apiEndpointSettings">API Endpoint Settings</h3>
+              <p class="text-xs text-slate-600 mb-3" data-i18n="apiEndpointHelp">
+                Connect to a live FastAPI backend or leave empty for offline pre-evaluated mode.
+              </p>
+              <div class="space-y-3">
+                <div>
+                  <label for="apiUrlInput" class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="apiUrlLabel">Endpoint URL</label>
+                  <input id="apiUrlInput" type="url" value="http://localhost:8000" placeholder="https://ad-copy-grader.run.app" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+                </div>
+                <div class="flex items-center justify-between pt-1">
+                  <button id="testApiBtn" type="button" class="px-2.5 py-1 text-xs font-medium rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-i18n="testConnectionBtn">
+                    Test Health (/healthz)
+                  </button>
+                  <button id="saveApiBtn" type="button" class="px-3 py-1 text-xs font-semibold rounded-md bg-indigo-600 hover:bg-indigo-700 text-white transition" data-i18n="saveBtn">
+                    Save
+                  </button>
+                </div>
+                <div id="apiTestResult" class="hidden text-xs p-2 rounded-md bg-slate-50 border border-slate-200"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bilingual Toggle (🇺🇸 EN / 🇧🇷 PT) -->
+          <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-100">
+            <button id="langEnBtn" type="button" class="px-2.5 py-1 text-xs font-semibold rounded-md transition shadow-sm bg-white text-slate-900" aria-label="Switch to English">
+              🇺🇸 EN
+            </button>
+            <button id="langPtBtn" type="button" class="px-2.5 py-1 text-xs font-semibold rounded-md transition text-slate-600 hover:text-slate-900" aria-label="Mudar para Português">
+              🇧🇷 PT
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Scenario Selector Bar -->
+  <section class="bg-slate-100/80 border-b border-slate-200 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500" data-i18n="scenariosLabel">Scenarios:</span>
+          <span class="text-xs text-slate-500 hidden md:inline" data-i18n="scenariosSubtitle">(Pre-evaluated synthetic benchmarks)</span>
+        </div>
+        <div id="scenarioPills" class="flex flex-wrap items-center gap-2">
+          <!-- Populated dynamically via app.js -->
+        </div>
+      </div>
+      <!-- Scenario description pill -->
+      <div class="mt-2 text-xs text-slate-600 flex items-start space-x-1.5">
+        <span class="font-semibold text-slate-700" data-i18n="scenarioDetailLabel">Active Scenario:</span>
+        <span id="scenarioDescription" class="italic text-slate-600">Loading scenarios...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main 3-Column Layout -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- LEFT COLUMN: Landing Page Context Card (col-span-3) -->
+      <section class="lg:col-span-3 space-y-4">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-2">
+              <div class="w-6 h-6 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">
+                LP
+              </div>
+              <h2 class="text-sm font-bold text-slate-900" data-i18n="lpCardTitle">Landing Page Context</h2>
+            </div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600" data-i18n="ruleA01Badge">
+              Rule A01 Target
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-500 mt-3" data-i18n="lpCardHelp">
+            The <strong>Code Authority Filter</strong> and Rule <strong>A01</strong> cross-examine every price, discount, and claim against this text.
+          </p>
+
+          <div class="mt-4 space-y-3">
+            <div>
+              <label for="primaryServiceInput" class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="primaryServiceLabel">
+                Primary Service
+              </label>
+              <input id="primaryServiceInput" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. Dental Implants">
+            </div>
+
+            <div>
+              <label for="finalUrlInput" class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="finalUrlLabel">
+                Final URL (HTTPS)
+              </label>
+              <input id="finalUrlInput" type="url" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono" placeholder="https://example.com">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="lpContextInput" class="block text-xs font-semibold text-slate-700" data-i18n="lpContextLabel">
+                  LP Context Text
+                </label>
+                <span id="lpTokenCountBadge" class="text-[10px] text-slate-400 font-mono">0 tokens</span>
+              </div>
+              <textarea id="lpContextInput" rows="7" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-sans" placeholder="Paste landing page copy or offer details..."></textarea>
+            </div>
+
+            <!-- Detected Numeric Tokens in LP -->
+            <div class="pt-2 border-t border-slate-100">
+              <span class="block text-[11px] font-semibold text-slate-600 mb-1.5" data-i18n="detectedLpTokensLabel">
+                Detected Price/Offer Tokens:
+              </span>
+              <div id="detectedLpTokensList" class="flex flex-wrap gap-1.5 min-h-6">
+                <!-- Badges populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MIDDLE COLUMN: Google Ads RSA Editor & Search Preview (col-span-5) -->
+      <section class="lg:col-span-5 space-y-4">
+        <!-- Live Google Search Ad Preview Card -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-3">
+            <div class="flex items-center space-x-2">
+              <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+              </svg>
+              <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider" data-i18n="liveSearchPreviewTitle">
+                Google Search Ad Live Preview
+              </h2>
+            </div>
+            <span class="text-[10px] font-medium text-slate-400">Desktop 600px</span>
+          </div>
+
+          <!-- Realistic Google Search Ad Box -->
+          <div class="rounded-lg border border-slate-200 p-3.5 bg-white space-y-1 shadow-sm">
+            <div class="flex items-center space-x-1.5 text-xs text-slate-700">
+              <span class="font-bold text-slate-900" data-i18n="adSponsoredLabel">Sponsored</span>
+              <span class="text-slate-400">·</span>
+              <span id="previewDisplayUrl" class="text-slate-700 truncate font-mono text-[11px]">https://example.com/implants/austin</span>
+            </div>
+            <h3 id="previewHeadline" class="text-base sm:text-lg font-medium text-blue-800 hover:underline leading-snug cursor-pointer line-clamp-2">
+              Dental Implants Clinic | Top Dental Implants | Best Care
+            </h3>
+            <p id="previewDescription" class="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+              Restore your smile with permanent dental implants. Schedule your consultation today. Experienced oral surgeons.
+            </p>
+          </div>
+        </div>
+
+        <!-- RSA Editor Form Card -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 class="text-sm font-bold text-slate-900" data-i18n="rsaEditorTitle">Google Ads RSA Asset Editor</h2>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs text-slate-500" data-i18n="rulesEngineBadge">Rules D01–D11</span>
+            </div>
+          </div>
+
+          <!-- Display Paths (Path 1 / Path 2) -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="path1Input" class="text-xs font-semibold text-slate-700" data-i18n="path1Label">Path 1</label>
+                <span id="path1Counter" class="text-[10px] font-mono font-medium text-slate-400">0/15</span>
+              </div>
+              <input id="path1Input" type="text" maxlength="25" placeholder="e.g. implants" class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="path2Input" class="text-xs font-semibold text-slate-700" data-i18n="path2Label">Path 2</label>
+                <span id="path2Counter" class="text-[10px] font-mono font-medium text-slate-400">0/15</span>
+              </div>
+              <input id="path2Input" type="text" maxlength="25" placeholder="e.g. austin" class="w-full px-2.5 py-1 text-xs rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+            </div>
+          </div>
+
+          <!-- Headlines Section -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center space-x-1.5">
+                <label class="text-xs font-bold text-slate-900" data-i18n="headlinesHeader">Headlines (3–15)</label>
+                <span id="headlinesCountBadge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-semibold">15 assets</span>
+              </div>
+              <button id="toggleHeadlinesBtn" type="button" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition" data-i18n="showAllHeadlinesBtn">
+                Show all 15 (9 hidden)
+              </button>
+            </div>
+            <div id="headlinesContainer" class="space-y-2">
+              <!-- Headline inputs (1-15) generated dynamically -->
+            </div>
+          </div>
+
+          <!-- Descriptions Section -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-slate-900" data-i18n="descriptionsHeader">Descriptions (2–4)</label>
+              <span id="descriptionsCountBadge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-semibold">2 assets</span>
+            </div>
+            <div id="descriptionsContainer" class="space-y-2.5">
+              <!-- Description textareas (1-4) generated dynamically -->
+            </div>
+          </div>
+
+          <!-- Action CTA Buttons -->
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
+            <button id="resetScenarioBtn" type="button" class="px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition" data-i18n="resetScenarioBtn">
+              Reset Scenario
+            </button>
+            <button id="gradeAdBtn" type="button" class="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition">
+              <svg id="gradeSpinner" class="hidden animate-spin -ml-1 mr-2 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span id="gradeBtnText" data-i18n="gradeAdBtn">Grade Ad Copy (Live API)</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: Hybrid Audit Report Card (col-span-4) -->
+      <section class="lg:col-span-4 space-y-4">
+        <!-- Score Hero Card -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h2 class="text-sm font-bold text-slate-900" data-i18n="auditReportTitle">Hybrid Audit Report</h2>
+            <span id="statusPassBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+              PASSED
+            </span>
+          </div>
+
+          <div class="mt-4 flex items-center justify-between bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div>
+              <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="qualityScaleLabel">
+                Google Ads Quality
+              </span>
+              <div class="flex items-baseline space-x-1.5 mt-0.5">
+                <span id="heroGrade10" class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">10.0</span>
+                <span class="text-xs font-bold text-slate-400">/ 10.0</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="scoreLabel">
+                Score
+              </span>
+              <div class="flex items-baseline justify-end space-x-1 mt-0.5">
+                <span id="heroScore" class="text-2xl sm:text-3xl font-extrabold text-indigo-600">100</span>
+                <span class="text-xs font-bold text-slate-400">/ 100</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rules & Provenance Specs -->
+          <div class="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium border border-blue-100" data-i18n="rulesCheckedBadge">
+              11 Code Rules (D01-D11) + 3 LLM (A01-A03)
+            </span>
+            <span id="activeModelBadge" class="inline-flex items-center px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 font-mono text-[10px] border border-purple-100">
+              FakeModelClient
+            </span>
+          </div>
+        </div>
+
+        <!-- Degraded / Fallback Alert Banner (hidden by default) -->
+        <div id="degradedBanner" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-800">
+          <div class="flex items-start space-x-2">
+            <svg class="w-4 h-4 text-amber-600 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <div>
+              <span class="font-bold block" data-i18n="degradedTitle">Fallback Notice</span>
+              <p id="degradedMessage">Semantic LLM review was unavailable; returning deterministic code audit only (D01-D11).</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CODE AUTHORITY FILTER CALLOUT (Displays stripped LLM false positives!) -->
+        <div id="authorityFilterCallout" class="hidden rounded-xl border border-emerald-300 bg-emerald-50/80 p-4 shadow-sm">
+          <div class="flex items-center space-x-2 mb-1.5">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            <h3 class="text-xs font-bold text-emerald-900 uppercase tracking-wider" data-i18n="authorityFilterTitle">
+              Code Authority Filter Active
+            </h3>
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-emerald-200 text-emerald-800" data-i18n="falsePositiveStrippedBadge">
+              False Positive Intercepted
+            </span>
+          </div>
+          <p class="text-xs text-emerald-800 leading-relaxed" data-i18n="authorityFilterDescription">
+            The raw LLM review flagged an offer or price claim, but the deterministic server filter verified that the claim matches the Landing Page context and automatically stripped the false positive before calculating the final score!
+          </p>
+          <div id="droppedIssuesList" class="mt-2.5 space-y-1.5">
+            <!-- Intercepted issues populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Active Issues List Card -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider" data-i18n="detectedIssuesTitle">
+              Detected Issues
+            </h3>
+            <span id="issuesCountBadge" class="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+              0 issues
+            </span>
+          </div>
+
+          <div id="issuesList" class="space-y-2">
+            <!-- Issues or perfect score badge -->
+          </div>
+        </div>
+
+        <!-- Validated Rewrite Suggestions Card -->
+        <div id="suggestionsCard" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wider" data-i18n="rewriteSuggestionsTitle">
+                Validated Rewrites
+              </h3>
+              <p class="text-[11px] text-slate-500" data-i18n="rewriteSuggestionsSubtitle">
+                Guaranteed &le;30 chars (headlines) / &le;90 chars (descriptions)
+              </p>
+            </div>
+            <span id="suggestionsCountBadge" class="text-xs font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700">
+              0 rewrites
+            </span>
+          </div>
+
+          <div id="suggestionsList" class="space-y-2.5">
+            <!-- Suggestions populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-auto border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p data-i18n="footerText">
+        Ad Copy Grader — Deterministic Google Ads rules engine &amp; LLM semantic audit.
+      </p>
+      <div class="flex items-center space-x-4">
+        <span class="inline-flex items-center space-x-1 text-slate-600">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span data-i18n="offlineReady">Offline Ready</span>
+        </span>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-slate-600 hover:text-slate-900 underline font-medium">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
