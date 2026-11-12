@@ -1,0 +1,26 @@
+description: "Ad Copy Grader - 3-Column Evaluation (1. Raw LLM vs. 2. Hybrid Pipeline vs. 3. Degraded Prompt)"
+
+prompts:
+  - "Case: {{name}}"
+
+providers:
+  - id: file://provider.py
+    label: "1. Raw LLM (Before Code Filters)"
+    config:
+      mode: raw
+  - id: file://provider.py
+    label: "2. Production Hybrid Pipeline (Code + LLM + Filters)"
+    config:
+      mode: pipeline
+  - id: file://provider.py
+    label: "3. Degraded Prompt (Without Code-Authority Guardrail)"
+    config:
+      mode: degraded
+
+tests: file://cases.py:get_tests
+
+evaluateOptions:
+  maxConcurrency: 1
+
+commandLineOptions:
+  write: false

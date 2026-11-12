@@ -18,7 +18,7 @@ from ad_copy_grader.llm import (
 )
 from ad_copy_grader.models import AdInput, GradeResult
 from ad_copy_grader.parser import LlmOutputError
-from ad_copy_grader.pipeline import grade, grade_with_degradation
+from ad_copy_grader.pipeline import build_degraded_result, grade, grade_with_degradation
 from ad_copy_grader.settings import Settings, get_settings
 
 logger = logging.getLogger("ad_copy_grader.api")
@@ -116,7 +116,7 @@ def create_app(
                 pipeline_result = await grade(ad, client)
                 result = pipeline_result.final
             except (LlmClientError, LlmOutputError):
-                fallback = await grade_with_degradation(ad, client)
+                fallback = build_degraded_result(ad)
                 latency_ms = (time.perf_counter() - start_time) * 1000.0
                 log_grade_event(ad, fallback, latency_ms)
                 return JSONResponse(

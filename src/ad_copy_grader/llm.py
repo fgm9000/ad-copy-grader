@@ -8,8 +8,6 @@ from typing import Literal, Protocol, TypedDict
 import httpx
 from pydantic import BaseModel
 
-from ad_copy_grader.prompt import DEGRADED_SENTINEL_EN, DEGRADED_SENTINEL_PT
-
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_LLM_MODEL = "google/gemini-2.5-flash"
 
@@ -181,6 +179,18 @@ def _extract_ad_payload(messages: Sequence[ChatMessage]) -> dict[str, object] | 
     return None
 
 
+def _price_digits_in_lp(offer_str: str, lp_context: str) -> bool:
+    """Return True if all numeric digit groups in offer_str appear in lp_context."""
+    if not lp_context.strip():
+        return False
+    lp_digits = {re.sub(r"\D", "", m) for m in re.findall(r"\d[\d.,]*", lp_context)}
+    offer_digits = [re.sub(r"\D", "", m) for m in re.findall(r"\d[\d.,]*", offer_str)]
+    offer_digits = [d for d in offer_digits if d]
+    if not offer_digits:
+        return False
+    return all(d in lp_digits or d in lp_context for d in offer_digits)
+
+
 def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
     """Produce a deterministic JSON review for testing and offline CI evaluation."""
     payload = _extract_ad_payload(messages) or {}
@@ -198,20 +208,18 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
         else []
     )
     primary_service = str(payload.get("primary_service") or "Service")
+    lp_context = str(payload.get("lp_context") or "")
 
     system_text = next((m["content"] for m in messages if m["role"] == "system"), "")
-    is_degraded = (
-        DEGRADED_SENTINEL_EN not in system_text and DEGRADED_SENTINEL_PT not in system_text
-    )
+    is_degraded = system_text == "custom"
 
     issues: list[dict[str, object]] = []
     suggestions: list[dict[str, object]] = []
 
-    # Check A01 on headlines and descriptions (intentionally naive on price match so
-    # pipeline authority filter is exercised when the price actually exists in lp_context).
+    # Check A01 on headlines and descriptions when price/promo is absent from lp_context
     for idx, headline in enumerate(headlines):
         price_match = PRICE_OR_PROMO_PATTERN.search(headline)
-        if price_match:
+        if price_match and not _price_digits_in_lp(price_match.group(0), lp_context):
             offer_str = price_match.group(0)
             msg = (
                 f"Preço ou oferta '{offer_str}' no título não confirmado na landing page."
@@ -244,7 +252,7 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
 
     for idx, desc in enumerate(descriptions):
         price_match = PRICE_OR_PROMO_PATTERN.search(desc)
-        if price_match:
+        if price_match and not _price_digits_in_lp(price_match.group(0), lp_context):
             offer_str = price_match.group(0)
             msg = (
                 f"Preço ou oferta '{offer_str}' na descrição não confirmado na landing page."

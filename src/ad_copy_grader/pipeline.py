@@ -216,6 +216,23 @@ async def grade(
     return PipelineResult(raw=raw_result, final=final_result, usage=usage)
 
 
+def build_degraded_result(ad: AdInput) -> GradeResult:
+    """Build deterministic-only GradeResult when the semantic LLM review fails."""
+    deterministic_issues = run_rules(ad)
+    score, grade_10, passed = compute_score(deterministic_issues)
+    return GradeResult(
+        score=score,
+        grade_10=grade_10,
+        passed=passed,
+        issues=deterministic_issues,
+        suggestions=[],
+        discarded_suggestions_count=0,
+        rules_checked=list(DETERMINISTIC_RULE_IDS),
+        model=None,
+        degraded_reason=DEGRADED_MESSAGES[ad.lang],
+    )
+
+
 async def grade_with_degradation(
     ad: AdInput,
     client: ModelClient,
@@ -225,24 +242,13 @@ async def grade_with_degradation(
         result = await grade(ad, client)
         return result.final
     except (LlmClientError, LlmOutputError):
-        deterministic_issues = run_rules(ad)
-        score, grade_10, passed = compute_score(deterministic_issues)
-        return GradeResult(
-            score=score,
-            grade_10=grade_10,
-            passed=passed,
-            issues=deterministic_issues,
-            suggestions=[],
-            discarded_suggestions_count=0,
-            rules_checked=list(DETERMINISTIC_RULE_IDS),
-            model=None,
-            degraded_reason=DEGRADED_MESSAGES[ad.lang],
-        )
+        return build_degraded_result(ad)
 
 
 __all__ = [
     "DEGRADED_MESSAGES",
     "PipelineResult",
+    "build_degraded_result",
     "compute_score",
     "filter_llm_issues",
     "grade",

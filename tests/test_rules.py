@@ -39,15 +39,17 @@ FIXTURES_DIR = Path(__file__).parent / "fixtures"
 @pytest.fixture
 def clean_en_payload() -> dict[str, object]:
     """Load clean English RSA fixture payload."""
-    with open(FIXTURES_DIR / "base_clean_en.json", encoding="utf-8") as f:
-        return json.load(f)  # type: ignore[no-any-return]
+    data = json.loads((FIXTURES_DIR / "base_clean_en.json").read_text(encoding="utf-8"))
+    assert isinstance(data, dict)
+    return data
 
 
 @pytest.fixture
 def clean_pt_payload() -> dict[str, object]:
     """Load clean Portuguese RSA fixture payload."""
-    with open(FIXTURES_DIR / "base_clean_pt.json", encoding="utf-8") as f:
-        return json.load(f)  # type: ignore[no-any-return]
+    data = json.loads((FIXTURES_DIR / "base_clean_pt.json").read_text(encoding="utf-8"))
+    assert isinstance(data, dict)
+    return data
 
 
 @pytest.fixture
@@ -627,7 +629,9 @@ def test_lp_context_truncation_over_1200_chars(clean_en_payload: dict[str, objec
 def test_ad_input_headline_max_schema_length(clean_en_payload: dict[str, object]) -> None:
     """Individual headline exceeding 60 characters fails Pydantic schema validation."""
     data = dict(clean_en_payload)
-    headlines = list(clean_en_payload["headlines"])  # type: ignore[arg-type]
+    raw_headlines = clean_en_payload["headlines"]
+    assert isinstance(raw_headlines, list)
+    headlines = list(raw_headlines)
     headlines[0] = "H" * 61
     data["headlines"] = headlines
 
@@ -639,7 +643,9 @@ def test_ad_input_headline_max_schema_length(clean_en_payload: dict[str, object]
 def test_ad_input_description_max_schema_length(clean_en_payload: dict[str, object]) -> None:
     """Individual description exceeding 180 characters fails schema validation."""
     data = dict(clean_en_payload)
-    descriptions = list(clean_en_payload["descriptions"])  # type: ignore[arg-type]
+    raw_descriptions = clean_en_payload["descriptions"]
+    assert isinstance(raw_descriptions, list)
+    descriptions = list(raw_descriptions)
     descriptions[0] = "D" * 181
     data["descriptions"] = descriptions
 
