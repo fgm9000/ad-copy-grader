@@ -1,0 +1,93 @@
+name: Deploy to Cloud Run
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: ["completed"]
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  GCP_REGION: us-central1
+  SERVICE_NAME: ad-copy-grader
+  ARTIFACT_REPO: ad-copy-grader
+
+jobs:
+  deploy:
+    name: Build & Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Check GCP configuration variables
+        id: gcp_check
+        run: |
+          if [ -z "${{ vars.GCP_PROJECT_ID }}" ] || [ -z "${{ vars.GCP_WIF_PROVIDER }}" ] || [ -z "${{ vars.GCP_SERVICE_ACCOUNT }}" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GCP Workload Identity Federation repository variables (GCP_PROJECT_ID, GCP_WIF_PROVIDER, GCP_SERVICE_ACCOUNT) are not configured yet. Skipping live Cloud Run deployment."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate to Google Cloud via Workload Identity Federation
+        if: steps.gcp_check.outputs.configured == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        if: steps.gcp_check.outputs.configured == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        if: steps.gcp_check.outputs.configured == 'true'
+        run: gcloud auth configure-docker "${{ env.GCP_REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build and push container image
+        if: steps.gcp_check.outputs.configured == 'true'
+        env:
+          IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          IMAGE_URI="${{ env.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPO }}/${{ env.SERVICE_NAME }}:${IMAGE_TAG}"
+          docker build -t "${IMAGE_URI}" .
+          docker push "${IMAGE_URI}"
+          echo "IMAGE_URI=${IMAGE_URI}" >> "$GITHUB_ENV"
+
+      - name: Deploy to Google Cloud Run
+        if: steps.gcp_check.outputs.configured == 'true'
+        id: deploy
+        run: |
+          SERVICE_URL=$(gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --project="${{ vars.GCP_PROJECT_ID }}" \
+            --region="${{ env.GCP_REGION }}" \
+            --image="${{ env.IMAGE_URI }}" \
+            --platform=managed \
+            --min-instances=0 \
+            --max-instances=1 \
+            --concurrency=10 \
+            --memory=512Mi \
+            --cpu=1 \
+            --timeout=30 \
+            --allow-unauthenticated \
+            --set-secrets="OPENROUTER_API_KEY=openrouter-api-key:latest" \
+            --set-env-vars="LLM_MODEL=google/gemini-2.5-flash,ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS || '*' }}" \
+            --format="value(status.url)")
+          echo "service_url=${SERVICE_URL}" >> "$GITHUB_OUTPUT"
+
+      - name: Post-deploy smoke test (/healthz)
+        if: steps.gcp_check.outputs.configured == 'true'
+        run: |
+          curl --fail --silent --show-error --retry 3 --retry-delay 3 \
+            "${{ steps.deploy.outputs.service_url }}/healthz" | grep -q '"status":"ok"'
