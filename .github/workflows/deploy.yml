@@ -88,8 +88,8 @@ jobs:
             --format="value(status.url)")
           echo "service_url=${SERVICE_URL}" >> "$GITHUB_OUTPUT"
 
-      - name: Post-deploy smoke test (/healthz)
+      - name: Post-deploy smoke test (/health)
         if: steps.gcp_check.outputs.configured == 'true'
         run: |
-          curl --fail --silent --show-error --retry 10 --retry-delay 5 --retry-all-errors \
-            "${{ steps.deploy.outputs.service_url }}/healthz" | grep -q '"status":"ok"'
+          curl --fail --silent --show-error --retry 5 --retry-delay 3 --retry-all-errors \
+            "${{ steps.deploy.outputs.service_url }}/health" | grep -q '"status":"ok"'

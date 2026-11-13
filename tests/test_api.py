@@ -44,13 +44,14 @@ def test_root_redirects_to_docs() -> None:
 
 
 def test_healthz_endpoint() -> None:
-    """Verify GET /healthz returns 200 with status ok and version 0.1.0."""
+    """Verify GET /health and GET /healthz return 200 with status ok and version 0.1.0."""
     app = create_app(settings=Settings(fake_model=True))
     client = TestClient(app)
 
-    response = client.get("/healthz")
-    assert response.status_code == 200
-    assert response.json() == {"status": "ok", "version": "0.1.0"}
+    for path in ("/health", "/healthz"):
+        response = client.get(path)
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok", "version": "0.1.0"}
 
 
 def test_grade_endpoint_valid_en_and_pt(

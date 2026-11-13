@@ -91,7 +91,8 @@ def create_app(
         """Redirect root URL requests to the interactive Swagger UI documentation."""
         return RedirectResponse(url="/docs")
 
-    @app.get("/healthz")
+    @app.get("/health")
+    @app.get("/healthz", include_in_schema=False)
     async def healthz() -> dict[str, str]:
         """Return service health status and current version."""
         return {"status": "ok", "version": __version__}

@@ -158,13 +158,13 @@ Every issue encountered during initial CI/CD activation and Cloud Run deployment
 - **Root Cause:** In `pydantic-settings` v2, complex fields typed as `list[str]` are pre-decoded with `json.loads()` by `EnvSettingsSource` *before* `"before"` field validators execute. Passing a plain URL (`ALLOWED_ORIGINS=https://fgm9000.github.io`) therefore failed JSON decoding before `parse_allowed_origins` could split it.
 - **Resolution:** Annotated `allowed_origins: Annotated[list[str], NoDecode]` in `src/ad_copy_grader/settings.py` so `pydantic-settings` passes the raw environment string directly into `@field_validator("allowed_origins", mode="before")`.
 
-### Issue 7 — Root URL (`GET /`) Returning `404 Not Found` & Post-Deploy Smoke Test Route Propagation
+### Issue 7 — Google Frontend (GFE) Reserved `/healthz` Path (`404 Not Found`) & Root URL Redirect (`GET /`)
 - **Symptom:**
-  1. Clicking the public Cloud Run service URL (`https://ad-copy-grader-316736391681.us-central1.run.app/`) in a browser returned `HTTP 404` (`{"detail":"Not Found"}`).
-  2. Immediately after recreating the service, the CI smoke test (`curl --fail --retry 3`) exited on the first `404` before Google Frontend (GFE) finished propagating the route.
+  1. External requests to `https://ad-copy-grader-*.run.app/healthz` (including the GitHub Actions post-deploy smoke test) received a Google-branded `Error 404 (Not Found)!!1` HTML page without any entry appearing in Cloud Run's `run.googleapis.com/requests` logs.
+  2. Clicking the root Cloud Run URL (`https://ad-copy-grader-316736391681.us-central1.run.app/`) in a browser returned FastAPI's JSON `404` (`{"detail":"Not Found"}`).
 - **Root Cause:**
-  1. FastAPI only registered `/healthz`, `/v1/grade`, and `/docs`, without a handler on `GET /`.
-  2. Standard `curl --fail --retry 3` does not retry HTTP `404` responses unless `--retry-all-errors` is specified, and Cloud Run public services benefit from `--no-invoker-iam-check` alongside `--allow-unauthenticated`.
+  1. **GFE Reserved `*z` Paths:** On `*.run.app` domains, Google Frontend (GFE) reserves paths ending in `z` (`/healthz`, `/statusz`, `/varz`) for internal Google infrastructure and blocks external HTTP requests at the edge before they ever reach the Cloud Run container.
+  2. **Missing Root Handler:** FastAPI only registered `/healthz`, `/v1/grade`, and `/docs`, with no route for `GET /`.
 - **Resolution:**
-  1. Added `@app.get("/", include_in_schema=False)` in `src/ad_copy_grader/api.py` returning `RedirectResponse(url="/docs")` so visiting the root Cloud Run URL opens the interactive Swagger UI.
-  2. Added `--no-invoker-iam-check` to `gcloud run deploy` and `--retry 10 --retry-delay 5 --retry-all-errors` to the post-deploy `/healthz` smoke test in `.github/workflows/deploy.yml`.
+  1. Added `@app.get("/health")` alongside `@app.get("/healthz", include_in_schema=False)` in `src/ad_copy_grader/api.py` and pointed the external smoke test in `.github/workflows/deploy.yml` to `/health` (`curl --fail ... "${SERVICE_URL}/health"`).
+  2. Added `@app.get("/", include_in_schema=False)` returning `RedirectResponse(url="/docs")` so visiting the root Cloud Run URL in a browser redirects (`HTTP 307`) directly to the interactive Swagger UI.

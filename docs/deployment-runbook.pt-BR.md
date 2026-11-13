@@ -158,13 +158,13 @@ Todos os problemas técnicos encontrados durante a ativação inicial do CI/CD e
 - **Causa-Raiz:** No `pydantic-settings` v2, campos compostos tipados como `list[str]` são pré-decodificados via `json.loads()` pela `EnvSettingsSource` *antes* da execução dos validadores `mode="before"`. Passar uma URL simples (`ALLOWED_ORIGINS=https://fgm9000.github.io`) falhava na decodificação JSON antes de chegar ao validador.
 - **Solução:** Anotado o campo como `allowed_origins: Annotated[list[str], NoDecode]` em `src/ad_copy_grader/settings.py`, instruindo o `pydantic-settings` a repassar a string bruta diretamente ao `@field_validator("allowed_origins", mode="before")`.
 
-### Problema 7 — URL Raiz (`GET /`) Retornando `404 Not Found` e Propagação de Rota no Smoke Test
+### Problema 7 — Caminho `/healthz` Reservado pelo Google Frontend (GFE) (`404 Not Found`) e Redirecionamento da Raiz (`GET /`)
 - **Sintoma:**
-  1. Ao abrir a URL pública do Cloud Run (`https://ad-copy-grader-316736391681.us-central1.run.app/`) no navegador, o FastAPI respondia `HTTP 404` (`{"detail":"Not Found"}`).
-  2. Imediatamente após recriar o serviço, o smoke test (`curl --fail --retry 3`) falhava no primeiro `404` antes de o Google Frontend (GFE) concluir a propagação da rota.
+  1. Requisições externas para `https://ad-copy-grader-*.run.app/healthz` (incluindo o smoke test pós-deploy do GitHub Actions) recebiam uma página HTML `Error 404 (Not Found)!!1` do próprio Google sem que nenhuma requisição aparecesse nos logs `run.googleapis.com/requests` do container.
+  2. Ao abrir a URL raiz do Cloud Run (`https://ad-copy-grader-316736391681.us-central1.run.app/`) no navegador, o FastAPI respondia `HTTP 404` (`{"detail":"Not Found"}`).
 - **Causa-Raiz:**
-  1. O FastAPI expunha apenas `/healthz`, `/v1/grade` e `/docs`, sem rota configurada para `GET /`.
-  2. O comando `curl --fail --retry 3` não refaz tentativas em respostas HTTP `404` a menos que `--retry-all-errors` seja informado, além da recomendação oficial do Cloud Run de incluir `--no-invoker-iam-check` junto a `--allow-unauthenticated` para endpoints públicos.
+  1. **Caminhos `*z` Reservados no GFE:** Nos domínios `*.run.app`, o Google Frontend (GFE) reserva rotas terminadas em `z` (`/healthz`, `/statusz`, `/varz`) para diagnóstico interno da infraestrutura do Google e intercepta chamadas HTTP externas na borda antes de chegarem ao container Cloud Run.
+  2. **Ausência de Handler na Raiz:** O FastAPI registrava apenas `/healthz`, `/v1/grade` e `/docs`, sem rota para `GET /`.
 - **Solução:**
-  1. Adicionada a rota `@app.get("/", include_in_schema=False)` em `src/ad_copy_grader/api.py` retornando `RedirectResponse(url="/docs")`, fazendo com que a URL raiz abra automaticamente o Swagger UI interativo.
-  2. Adicionada a flag `--no-invoker-iam-check` ao `gcloud run deploy` e `--retry 10 --retry-delay 5 --retry-all-errors` ao smoke test de `/healthz` no `.github/workflows/deploy.yml`.
+  1. Adicionado `@app.get("/health")` junto ao `@app.get("/healthz", include_in_schema=False)` em `src/ad_copy_grader/api.py` e atualizado o smoke test externo no `.github/workflows/deploy.yml` para consultar `/health`.
+  2. Adicionada a rota `@app.get("/", include_in_schema=False)` retornando `RedirectResponse(url="/docs")`, fazendo com que a URL pública raiz redirecione (`HTTP 307`) diretamente para o Swagger UI interativo.
