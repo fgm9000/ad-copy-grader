@@ -440,7 +440,7 @@
             Deterministic Engine (D01–D11)
           </h3>
           <p class="text-xs text-slate-600 leading-relaxed flex-1" data-i18n="archCard1Body">
-            LLMs notoriously miscount characters due to BPE tokenization. Exact hard limits (30 chars per headline D04, 90 per description D05, 15 per path D06) are enforced 100% by pure Python functions with Unicode NFC normalization. Also handles HTTPS validation (D07), duplicates (D08), forbidden exclamation marks (D09), ALL CAPS (D10), and primary service presence (D11).
+            LLMs notoriously miscount characters due to BPE tokenization. Exact hard limits (30 chars per headline D04, 90 per description D05, 15 per path D06) are enforced 100% by pure Python functions with Unicode NFC normalization. Also handles recommended 15-headline coverage (D02), 2–4 descriptions (D03), primary service in top headlines (D07), duplicates (D08), repeated punctuation (D09), ALL CAPS (D10), and valid HTTPS final URLs (D11).
           </p>
           <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-mono">
             Latency: &lt;1ms | Cost: $0.00 | Precision: 100%
