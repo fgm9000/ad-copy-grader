@@ -57,7 +57,7 @@ sequenceDiagram
 | `rewrite.py` | `validate_suggestions()` auditando cada sugestão de reescrita do LLM contra as regras determinísticas (`D04`, `D05`, `D08`, `D09`, `D10`). |
 | `limits.py` | Limitador *thread-safe* em memória por IP com janela deslizante (`RATE_LIMIT_PER_MINUTE=5`) e teto diário UTC (`DAILY_REQUEST_CAP=200`) com relógio injetável. |
 | `settings.py` | Carregador de ambiente `pydantic-settings` (`Settings`) com suporte a `.env` e `ALLOWED_ORIGINS` em lista CSV ou JSON. |
-| `api.py` | Aplicação FastAPI (`POST /v1/grade`, `GET /healthz`), middleware CORS, tratamento de exceções e telemetria estruturada em JSON de linha única. |
+| `api.py` | Aplicação FastAPI (`POST /v1/grade`, `GET /health`, redirect de `GET /` para `/docs`), middleware CORS, tratamento de exceções e telemetria estruturada em JSON de linha única. |
 
 ---
 

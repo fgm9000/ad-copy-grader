@@ -30,10 +30,15 @@
           </div>
         </div>
 
-        <!-- Controls: Static Showcase Badge & Language Toggle -->
-        <div class="flex items-center space-x-3">
+        <!-- Controls: Swagger Link, Showcase Badge & Language Toggle -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <a href="https://ad-copy-grader-316736391681.us-central1.run.app/docs" target="_blank" rel="noopener noreferrer" class="hidden md:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-2xs transition">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span data-i18n="swaggerNavLink">Live Swagger API (/docs) ↗</span>
+          </a>
+
           <!-- Static Architecture Showcase Badge -->
-          <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 text-xs font-semibold text-indigo-800 shadow-2xs">
+          <div class="hidden sm:inline-flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 text-xs font-semibold text-indigo-800 shadow-2xs">
             <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
             <span data-i18n="showcaseBadge">Interactive Architecture Showcase</span>
           </div>
@@ -76,10 +81,10 @@
         <div class="bg-white/80 backdrop-blur-xs rounded-xl p-3.5 border border-indigo-50 shadow-2xs space-y-1.5">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">1</span>
-            <h3 class="text-xs font-bold text-slate-900" data-i18n="step1Title">Select a Scenario</h3>
+            <h3 class="text-xs font-bold text-slate-900" data-i18n="step1Title">1. See Highlighted Errors &amp; LP Numbers</h3>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed" data-i18n="step1Desc">
-            Click one of the 4 benchmark pills below (Clean 10/10, Unverified Price A01, LP-Verified Price where Code Authority Filter intercepts an LLM false positive, or Clinical Guarantee A03 + Code Errors D04/D08).
+            Notice how Landing Page prices (left, e.g. <strong>$899</strong>) are highlighted and cross-checked against RSA Headlines (center), flagging unverified claims (<strong>[A01]</strong>) and length overflows (<strong>[D04]</strong>) in red.
           </p>
         </div>
 
@@ -87,10 +92,10 @@
         <div class="bg-white/80 backdrop-blur-xs rounded-xl p-3.5 border border-indigo-50 shadow-2xs space-y-1.5">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
-            <h3 class="text-xs font-bold text-slate-900" data-i18n="step2Title">Compare LP vs. RSA or Edit Live</h3>
+            <h3 class="text-xs font-bold text-slate-900" data-i18n="step2Title">2. Click "Apply All Fixes (1-Click)"</h3>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed" data-i18n="step2Desc">
-            Cross-check Landing Page Context (left) against RSA Assets (center). Try editing a headline past 30 chars or clicking "Apply Rewrite" on an issue to see the hybrid grader react live in 0ms.
+            Click <strong>"✨ Apply All Fixes (1-Click)"</strong> on the right (or edit any field) to apply pre-validated rewrites and watch the score jump from <strong>6.5 REJECTED</strong> to <strong>10.0 PASSED</strong> in 0ms!
           </p>
         </div>
 
@@ -98,10 +103,10 @@
         <div class="bg-white/80 backdrop-blur-xs rounded-xl p-3.5 border border-indigo-50 shadow-2xs space-y-1.5">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">3</span>
-            <h3 class="text-xs font-bold text-slate-900" data-i18n="step3Title">Inspect Hybrid Verdict &amp; Code</h3>
+            <h3 class="text-xs font-bold text-slate-900" data-i18n="step3Title">3. Test Scenario #2 &amp; Live Cloud Run API</h3>
           </div>
           <p class="text-xs text-slate-600 leading-relaxed" data-i18n="step3Desc">
-            See on the right which issues are Code Verified (D01–D11), LLM Judged (A01–A03), or intercepted by the Code Authority Filter. Scroll below to see how each Python module implements it under the hood.
+            Switch to <strong>Scenario 2</strong> to see the <strong>Code Authority Filter</strong> block an LLM false positive, or click <strong>"Verify on Cloud Run API"</strong> to inspect the live FastAPI JSON response.
           </p>
         </div>
       </div>
@@ -112,7 +117,6 @@
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div class="flex items-center space-x-2">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-700" data-i18n="scenariosLabel">Pre-Loaded Scenarios:</span>
-          <span class="text-xs text-slate-500 hidden md:inline" data-i18n="scenariosSubtitle">(Synthetic benchmarks produced by pipeline)</span>
         </div>
         <div id="scenarioPills" class="flex flex-wrap items-center gap-2">
           <!-- Populated dynamically via app.js -->
@@ -128,52 +132,70 @@
     <!-- Side-by-Side 3-Column Layout (Cards strictly aligned at the top) -->
     <section class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-      <!-- COLUMN 1: Landing Page Context Card (lg:col-span-3) -->
-      <div class="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-4">
+      <!-- COLUMN 1: Landing Page Context Card (lg:col-span-4) -->
+      <div class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-3.5">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">1</span>
             <h2 class="text-sm font-bold text-slate-900" data-i18n="lpCardTitle">Landing Page Context</h2>
           </div>
           <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200" data-i18n="ruleA01Badge">
-            Rule A01 Target
+            Rule A01 &amp; Authority Filter
           </span>
         </div>
 
-        <p class="text-xs text-slate-500" data-i18n="lpCardHelp">
-          The <strong>Code Authority Filter</strong> and Rule <strong>A01</strong> cross-examine every price, discount, and claim against this text.
-        </p>
+        <!-- Live Cross-Check Verdict Banner between LP numbers and Ad Headlines -->
+        <div id="lpCrossCheckBanner" class="p-2.5 rounded-lg border text-xs font-medium leading-snug">
+          <!-- Populated dynamically by app.js -->
+        </div>
 
         <div class="space-y-3">
-          <div>
-            <label for="primaryServiceInput" class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="primaryServiceLabel">
-              Primary Service
-            </label>
-            <input id="primaryServiceInput" type="text" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g. Dental Implants">
-          </div>
-
-          <div>
-            <label for="finalUrlInput" class="block text-xs font-semibold text-slate-700 mb-1" data-i18n="finalUrlLabel">
-              Final URL (HTTPS)
-            </label>
-            <input id="finalUrlInput" type="url" class="w-full px-3 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono" placeholder="https://example.com">
-          </div>
-
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <label for="lpContextInput" class="block text-xs font-semibold text-slate-700" data-i18n="lpContextLabel">
-                LP Context Text
+          <div class="grid grid-cols-2 gap-2.5">
+            <div>
+              <label for="primaryServiceInput" class="block text-[11px] font-semibold text-slate-700 mb-1" data-i18n="primaryServiceLabel">
+                Primary Service (Rule D11)
               </label>
-              <span id="lpTokenCountBadge" class="text-[10px] text-slate-400 font-mono">0 tokens</span>
+              <input id="primaryServiceInput" type="text" class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Dental Implants">
             </div>
-            <textarea id="lpContextInput" rows="7" class="w-full px-3 py-2 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-sans" placeholder="Paste landing page copy or offer details..."></textarea>
+
+            <div>
+              <label for="finalUrlInput" class="block text-[11px] font-semibold text-slate-700 mb-1" data-i18n="finalUrlLabel">
+                Final URL (Rule D07)
+              </label>
+              <input id="finalUrlInput" type="url" class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="https://example.com">
+            </div>
+          </div>
+
+          <!-- LP Scanner View (Highlighted Numbers) + Edit Toggle -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center space-x-1.5">
+                <label for="lpContextInput" class="block text-xs font-bold text-slate-800" data-i18n="lpContextLabel">
+                  Landing Page Copy (Beginning, Middle &amp; End)
+                </label>
+              </div>
+              <button id="toggleLpEditBtn" type="button" class="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition" data-i18n="editLpBtn">
+                ✏️ Edit LP Text
+              </button>
+            </div>
+
+            <!-- Highlighted Scanner View (Visible by default so numbers pop out!) -->
+            <div id="lpHighlightedView" class="w-full p-3 text-xs leading-relaxed rounded-lg border border-slate-200 bg-slate-50/70 space-y-2.5 text-slate-700">
+              <!-- Populated dynamically with highlighted numbers -->
+            </div>
+
+            <!-- Raw Textarea (Shown when user clicks "Edit LP Text") -->
+            <textarea id="lpContextInput" rows="9" class="hidden w-full px-3 py-2 text-xs leading-relaxed rounded-lg border border-indigo-300 bg-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 font-sans" placeholder="Paste landing page copy or offer details..."></textarea>
           </div>
 
           <!-- Detected Numeric Tokens in LP -->
           <div class="pt-2 border-t border-slate-100">
-            <span class="block text-[11px] font-semibold text-slate-600 mb-1.5" data-i18n="detectedLpTokensLabel">
-              Detected Price/Offer Tokens:
-            </span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="block text-[11px] font-semibold text-slate-600" data-i18n="detectedLpTokensLabel">
+                Extracted Numbers &amp; Prices Checked by LLM / Filter:
+              </span>
+              <span id="lpTokenCountBadge" class="text-[10px] text-slate-400 font-mono">0 tokens</span>
+            </div>
             <div id="detectedLpTokensList" class="flex flex-wrap gap-1.5 min-h-6">
               <!-- Badges populated dynamically -->
             </div>
@@ -181,15 +203,15 @@
         </div>
       </div>
 
-      <!-- COLUMN 2: Google Ads RSA Asset Editor Card (lg:col-span-5) - DIRECTLY AT TOP -->
-      <div class="lg:col-span-5 bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-4">
+      <!-- COLUMN 2: Google Ads RSA Asset Editor Card (lg:col-span-4) -->
+      <div class="lg:col-span-4 bg-white rounded-xl border border-slate-200 shadow-xs p-4 space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div class="flex items-center space-x-2">
             <span class="w-5 h-5 rounded-full bg-slate-900 text-white text-[11px] font-bold flex items-center justify-center">2</span>
             <h2 class="text-sm font-bold text-slate-900" data-i18n="rsaEditorTitle">RSA Asset Editor</h2>
           </div>
           <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200" data-i18n="rulesEngineBadge">
-            Rules D01–D11
+            Rules D01–D11 + A01–A03
           </span>
         </div>
 
@@ -216,7 +238,7 @@
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center space-x-1.5">
               <label class="text-xs font-bold text-slate-900" data-i18n="headlinesHeader">Headlines (3–15)</label>
-              <span id="headlinesCountBadge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-semibold">15 assets</span>
+              <span id="headlinesCountBadge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-semibold">15/15</span>
             </div>
             <button id="toggleHeadlinesBtn" type="button" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition" data-i18n="showAllHeadlinesBtn">
               Show all 15 (9 hidden)
@@ -231,7 +253,7 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <label class="text-xs font-bold text-slate-900" data-i18n="descriptionsHeader">Descriptions (2–4)</label>
-            <span id="descriptionsCountBadge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-semibold">2 assets</span>
+            <span id="descriptionsCountBadge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-100 text-slate-600 font-semibold">2/4</span>
           </div>
           <div id="descriptionsContainer" class="space-y-2.5">
             <!-- Description textareas (1-4) generated dynamically -->
@@ -239,11 +261,11 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-3">
-          <button id="resetScenarioBtn" type="button" class="px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition" data-i18n="resetScenarioBtn">
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2.5">
+          <button id="resetScenarioBtn" type="button" class="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition" data-i18n="resetScenarioBtn">
             Reset Scenario
           </button>
-          <button id="gradeAdBtn" type="button" class="flex-1 inline-flex items-center justify-center space-x-2 px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
+          <button id="gradeAdBtn" type="button" class="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition">
             <span id="gradeBtnText" data-i18n="gradeAdBtn">Re-evaluate Ad Copy</span>
           </button>
         </div>
@@ -263,7 +285,7 @@
             </span>
           </div>
 
-          <div class="mt-4 flex items-center justify-between bg-slate-50 rounded-xl p-4 border border-slate-100">
+          <div class="mt-3 flex items-center justify-between bg-slate-50 rounded-xl p-3.5 border border-slate-100">
             <div>
               <span class="block text-xs font-semibold text-slate-500 uppercase tracking-wider" data-i18n="qualityScaleLabel">
                 Google Ads Quality
@@ -284,13 +306,20 @@
             </div>
           </div>
 
+          <!-- 1-Click Fix All Call-to-Action Button (Shown when issues/suggestions exist) -->
+          <div id="heroFixAllContainer" class="mt-3 hidden">
+            <button id="fixAllHeroBtn" type="button" class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition flex items-center justify-center space-x-1.5">
+              <span data-i18n="fixAllBtnText">✨ Apply All Validated Fixes (1-Click → 10.0 Score)</span>
+            </button>
+          </div>
+
           <!-- Rules & Provenance Specs -->
           <div class="mt-3 flex flex-wrap items-center gap-1.5 text-[11px]">
             <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium border border-blue-100" data-i18n="rulesCheckedBadge">
               11 Code Rules (D01-D11) + 3 LLM (A01-A03)
             </span>
             <span id="activeModelBadge" class="inline-flex items-center px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 font-mono text-[10px] border border-purple-100">
-              Hybrid Engine: Python Pipeline
+              Hybrid Pipeline: Deterministic + LLM
             </span>
           </div>
         </div>
@@ -348,6 +377,34 @@
 
           <div id="suggestionsList" class="space-y-2.5">
             <!-- Suggestions populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Live Cloud Run API & JSON Payload Inspector (For Tech Leads) -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-xs p-3.5 space-y-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="text-xs font-bold text-slate-800" data-i18n="cloudRunCardTitle">Cloud Run FastAPI Backend</span>
+            </div>
+            <span id="apiStatusBadge" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">
+              Ready • POST /v1/grade
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="callCloudRunBtn" type="button" class="flex-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-700 transition" data-i18n="callCloudRunBtn">
+              ☁️ Verify on Cloud Run API
+            </button>
+            <button id="toggleJsonDrawerBtn" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-mono font-semibold border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 transition" data-i18n="toggleJsonBtn">
+              { } JSON
+            </button>
+          </div>
+          <div id="jsonInspectorDrawer" class="hidden pt-2 border-t border-slate-100 space-y-1.5">
+            <div class="flex items-center justify-between text-[10px] font-mono text-slate-500">
+              <span>GradeResult Schema (Pydantic v2)</span>
+              <a href="https://ad-copy-grader-316736391681.us-central1.run.app/docs" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline font-semibold">Open Swagger /docs ↗</a>
+            </div>
+            <pre id="jsonInspectorPre" class="p-2.5 rounded-lg bg-slate-900 text-emerald-100 font-mono text-[10px] leading-snug overflow-x-auto"></pre>
           </div>
         </div>
       </div>
@@ -421,7 +478,7 @@
             Server Code Authority Filter
           </h3>
           <p class="text-xs text-slate-600 leading-relaxed flex-1" data-i18n="archCard3Body">
-            The server never blindly trusts LLM outputs. filter_llm_issues() acts as an automated boundary: strips any deterministic D* rule hallucinated by the model, drops out-of-bounds asset index hallucination, and suppresses A01 false positives whenever the flagged price or offer actually exists in lp_context (as proven in Scenario 3).
+            The server never blindly trusts LLM outputs. filter_llm_issues() acts as an automated boundary: strips any deterministic D* rule hallucinated by the model, drops out-of-bounds asset index hallucination, and suppresses A01 false positives whenever the flagged price or offer actually exists in lp_context (as proven in Scenario 2).
           </p>
           <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-mono">
             filter_llm_issues() | Zero Hallucinated D-Rules
@@ -440,10 +497,10 @@
             Validated Rewrites &amp; 3-Column Evals
           </h3>
           <p class="text-xs text-slate-600 leading-relaxed flex-1" data-i18n="archCard4Body">
-            validate_suggestions() re-audits every LLM rewrite against rules D04/D05/D08/D09/D10; non-compliant rewrites are discarded before reaching the user. Validated with a 3-column Promptfoo evaluation suite (raw vs. pipeline vs. degraded) and CI gates: ruff, mypy --strict, pytest (99.1% coverage), Semgrep OWASP Top 10, and CodeQL.
+            validate_suggestions() re-audits every LLM rewrite against rules D04/D05/D08/D09/D10; non-compliant rewrites are discarded before reaching the user. Validated with a 3-column Promptfoo evaluation suite (raw vs. pipeline vs. degraded) and CI gates: ruff, mypy --strict, pytest (100% coverage), Semgrep OWASP Top 10, and CodeQL.
           </p>
           <div class="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-mono">
-            3-Column Evals | 99.1% Coverage | CodeQL SAST
+            3-Column Evals | 100% Coverage | CodeQL SAST
           </div>
         </div>
       </div>
@@ -458,10 +515,7 @@
         Ad Copy Grader — Deterministic Google Ads rules engine &amp; LLM semantic audit.
       </p>
       <div class="flex items-center space-x-4">
-        <span class="inline-flex items-center space-x-1 text-slate-600">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-          <span data-i18n="offlineReady">Self-Contained Client Demo</span>
-        </span>
+        <a href="https://ad-copy-grader-316736391681.us-central1.run.app/docs" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline font-semibold">Cloud Run Swagger UI (/docs)</a>
         <a href="https://github.com/fgm9000/ad-copy-grader" target="_blank" rel="noopener noreferrer" class="text-slate-600 hover:text-slate-900 underline font-medium">GitHub Repository</a>
       </div>
     </div>

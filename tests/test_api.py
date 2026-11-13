@@ -44,7 +44,7 @@ def test_root_redirects_to_docs() -> None:
 
 
 def test_healthz_endpoint() -> None:
-    """Verify GET /health and GET /healthz return 200 with status ok and version 0.1.0."""
+    """Verify GET /health and GET /healthz return 200 and OpenAPI includes examples."""
     app = create_app(settings=Settings(fake_model=True))
     client = TestClient(app)
 
@@ -52,6 +52,16 @@ def test_healthz_endpoint() -> None:
         response = client.get(path)
         assert response.status_code == 200
         assert response.json() == {"status": "ok", "version": "0.1.0"}
+
+    openapi_res = client.get("/openapi.json")
+    assert openapi_res.status_code == 200
+    schema = openapi_res.json()
+    assert schema["paths"]["/health"]["get"]["summary"] == "Service Health Check"
+    examples = schema["paths"]["/v1/grade"]["post"]["requestBody"]["content"]["application/json"][
+        "examples"
+    ]
+    assert "1_hybrid_errors_en" in examples
+    assert "4_auditoria_hibrida_pt" in examples
 
 
 def test_grade_endpoint_valid_en_and_pt(
