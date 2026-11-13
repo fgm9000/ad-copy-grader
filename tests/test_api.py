@@ -33,6 +33,16 @@ def clean_ad_payload_pt() -> dict[str, Any]:
         return cast(dict[str, Any], json.load(f))
 
 
+def test_root_redirects_to_docs() -> None:
+    """Verify GET / redirects to /docs so clicking the public URL opens Swagger UI."""
+    app = create_app(settings=Settings(fake_model=True))
+    client = TestClient(app)
+
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "/docs"
+
+
 def test_healthz_endpoint() -> None:
     """Verify GET /healthz returns 200 with status ok and version 0.1.0."""
     app = create_app(settings=Settings(fake_model=True))

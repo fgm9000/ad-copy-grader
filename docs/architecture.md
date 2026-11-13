@@ -1,6 +1,8 @@
 # Architecture & Cloud Run Deployment Guide
 
 > **[🇺🇸 English](architecture.md) | [🇧🇷 Português](architecture.pt-BR.md)**
+>
+> **See also:** [Step-by-Step Cloud Run Deployment & Troubleshooting Runbook](deployment-runbook.md)
 
 ---
 

@@ -6,7 +6,7 @@ import time
 
 from fastapi import FastAPI, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 from ad_copy_grader import __version__
 from ad_copy_grader.limits import RateLimiter, extract_client_ip
@@ -85,6 +85,11 @@ def create_app(
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["Content-Type", "Authorization"],
     )
+
+    @app.get("/", include_in_schema=False)
+    async def root() -> RedirectResponse:
+        """Redirect root URL requests to the interactive Swagger UI documentation."""
+        return RedirectResponse(url="/docs")
 
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:

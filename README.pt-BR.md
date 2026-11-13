@@ -9,9 +9,10 @@ Serviço *stateless* em **FastAPI + Pydantic v2** e playground web interativo pa
 ## Links e Documentação
 
 - **Web Playground Interativo (GitHub Pages):** `https://fgm9000.github.io/ad-copy-grader/` *(ou abra `web/index.html` localmente)*
-- **Documentação OpenAPI / Swagger UI:** `http://localhost:8000/docs` *(rodando localmente ou no Cloud Run)*
+- **API Cloud Run Ao Vivo & Swagger UI:** `https://ad-copy-grader-316736391681.us-central1.run.app/docs` *(a raiz `/` redireciona automaticamente para `/docs`)*
 - **Documento de Requisitos de Produto (PRD):** [Português](docs/prd.pt-BR.md) | [English](docs/prd.md)
 - **Guia de Arquitetura e Setup Cloud Run (WIF):** [Português](docs/architecture.pt-BR.md) | [English](docs/architecture.md)
+- **Runbook de Deploy Cloud Run e Troubleshooting:** [Português](docs/deployment-runbook.pt-BR.md) | [English](docs/deployment-runbook.md)
 - **Registros de Decisão de Arquitetura (ADRs):**
   - [ADR-001: Python 3.12, FastAPI, Pydantic v2 e `uv`](docs/decisions/001-python-fastapi-pydantic-v2.pt-BR.md) ([EN](docs/decisions/001-python-fastapi-pydantic-v2.md))
   - [ADR-002: Pipeline Híbrido com Autoridade Determinística sobre o LLM](docs/decisions/002-hybrid-deterministic-llm-authority.pt-BR.md) ([EN](docs/decisions/002-hybrid-deterministic-llm-authority.md))

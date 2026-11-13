@@ -9,9 +9,10 @@ A stateless **FastAPI + Pydantic v2** service and interactive web playground tha
 ## Live Links & Documentation
 
 - **Interactive Web Playground (GitHub Pages):** `https://fgm9000.github.io/ad-copy-grader/` *(or open `web/index.html` locally)*
-- **OpenAPI / Swagger UI:** `http://localhost:8000/docs` *(when running locally or on Cloud Run)*
+- **Live Cloud Run API & Swagger UI:** `https://ad-copy-grader-316736391681.us-central1.run.app/docs` *(root `/` automatically redirects to `/docs`)*
 - **Product Requirements Document (PRD):** [English](docs/prd.md) | [Português](docs/prd.pt-BR.md)
 - **Architecture & Cloud Run WIF Setup Guide:** [English](docs/architecture.md) | [Português](docs/architecture.pt-BR.md)
+- **Cloud Run Deployment & Troubleshooting Runbook:** [English](docs/deployment-runbook.md) | [Português](docs/deployment-runbook.pt-BR.md)
 - **Architecture Decision Records (ADRs):**
   - [ADR-001: Python 3.12, FastAPI, Pydantic v2, and `uv`](docs/decisions/001-python-fastapi-pydantic-v2.md) ([PT-BR](docs/decisions/001-python-fastapi-pydantic-v2.pt-BR.md))
   - [ADR-002: Hybrid Deterministic Code + LLM Authority Pipeline](docs/decisions/002-hybrid-deterministic-llm-authority.md) ([PT-BR](docs/decisions/002-hybrid-deterministic-llm-authority.pt-BR.md))
