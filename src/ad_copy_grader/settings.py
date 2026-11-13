@@ -2,10 +2,10 @@
 
 import json
 from functools import lru_cache
-from typing import Any
+from typing import Annotated, Any
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
 
     openrouter_api_key: str = ""
     llm_model: str = "google/gemini-2.5-flash"
-    allowed_origins: list[str] = [
+    allowed_origins: Annotated[list[str], NoDecode] = [
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "https://fgm9000.github.io",
