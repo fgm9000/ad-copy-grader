@@ -74,6 +74,7 @@ jobs:
             --region="${{ env.GCP_REGION }}" \
             --image="${{ env.IMAGE_URI }}" \
             --platform=managed \
+            --service-account="ad-copy-grader-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \
             --min-instances=0 \
             --max-instances=1 \
             --concurrency=10 \
@@ -82,7 +83,7 @@ jobs:
             --timeout=30 \
             --allow-unauthenticated \
             --set-secrets="OPENROUTER_API_KEY=openrouter-api-key:latest" \
-            --set-env-vars="LLM_MODEL=google/gemini-2.5-flash,ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS || '*' }}" \
+            --set-env-vars="FAKE_MODEL=${{ vars.FAKE_MODEL || 'true' }},LLM_MODEL=google/gemini-2.5-flash,ALLOWED_ORIGINS=${{ vars.ALLOWED_ORIGINS || 'https://fgm9000.github.io' }}" \
             --format="value(status.url)")
           echo "service_url=${SERVICE_URL}" >> "$GITHUB_OUTPUT"
 
