@@ -32,8 +32,8 @@ const TRANSLATIONS = {
     scenarioDetailLabel: "Active Scenario:",
     lpCardTitle: "Landing Page Context",
     ruleA01Badge: "Rule A01 & Authority Filter",
-    primaryServiceLabel: "Primary Service (Rule D11)",
-    finalUrlLabel: "Final URL (Rule D07)",
+    primaryServiceLabel: "Primary Service (Rule D07)",
+    finalUrlLabel: "Final URL (Rule D11)",
     lpContextLabel: "Landing Page Copy (Beginning, Middle & End)",
     editLpBtn: "✏️ Edit LP Text",
     viewLpBtn: "👁️ Scanner View",
@@ -72,7 +72,7 @@ const TRANSLATIONS = {
       "Engineering architecture: strict separation of deterministic code rules and semantic LLM judgment.",
     archCard1Title: "Deterministic Engine (D01–D11)",
     archCard1Body:
-      "LLMs notoriously miscount characters due to BPE tokenization. Exact hard limits (30 chars per headline D04, 90 per description D05, 15 per path D06) are enforced 100% by pure Python functions with Unicode NFC normalization. Also handles HTTPS validation (D07), duplicates (D08), forbidden exclamation marks (D09), ALL CAPS (D10), and primary service presence (D11).",
+      "LLMs notoriously miscount characters due to BPE tokenization. Exact hard limits (30 chars per headline D04, 90 per description D05, 15 per path D06) are enforced 100% by pure Python functions with Unicode NFC normalization. Also handles recommended 15-headline coverage (D02), 2–4 descriptions (D03), primary service in top headlines (D07), duplicates (D08), repeated punctuation (D09), ALL CAPS (D10), and valid HTTPS final URLs (D11).",
     archCard2Title: "Bilingual LLM Audit & Self-Correction",
     archCard2Body:
       "Semantic rules evaluate unverified pricing vs. LP context (A01), missing CTA in descriptions (A02), and clinical/financial guarantees (A03). Uses native Portuguese (PROMPT_PT) and English (PROMPT_EN) system prompts with <ad_payload> XML fencing against prompt injection, parsed by Pydantic with 1 automatic self-correction retry on malformed outputs.",
@@ -113,8 +113,8 @@ const TRANSLATIONS = {
     scenarioDetailLabel: "Cenário Ativo:",
     lpCardTitle: "Contexto da Landing Page",
     ruleA01Badge: "Regra A01 & Filtro de Autoridade",
-    primaryServiceLabel: "Serviço Principal (Regra D11)",
-    finalUrlLabel: "URL Final (Regra D07)",
+    primaryServiceLabel: "Serviço Principal (Regra D07)",
+    finalUrlLabel: "URL Final (Regra D11)",
     lpContextLabel: "Texto da Landing Page (Começo, Meio e Fim)",
     editLpBtn: "✏️ Editar Texto da LP",
     viewLpBtn: "👁️ Visão com Grifos",
@@ -153,7 +153,7 @@ const TRANSLATIONS = {
       "Arquitetura de engenharia: separação estrita entre regras determinísticas de código e julgamento semântico do LLM.",
     archCard1Title: "Motor Determinístico (D01–D11)",
     archCard1Body:
-      "LLMs erram contagens de caracteres devido à tokenização BPE. Limites exatos (30 caracteres por título D04, 90 por descrição D05, 15 por caminho D06) são validados 100% por funções puras em Python com normalização Unicode NFC. Também valida HTTPS (D07), duplicidades (D08), exclamações (D09), CAIXA ALTA (D10) e presença do serviço principal (D11).",
+      "LLMs erram contagens de caracteres devido à tokenização BPE. Limites exatos (30 caracteres por título D04, 90 por descrição D05, 15 por caminho D06) são validados 100% por funções puras em Python com normalização Unicode NFC. Também valida cobertura recomendada de 15 títulos (D02), 2–4 descrições (D03), presença do serviço nos títulos iniciais (D07), duplicidades (D08), pontuação repetida (D09), CAIXA ALTA (D10) e URL HTTPS (D11).",
     archCard2Title: "Auditoria Bilíngue LLM & Autocorreção",
     archCard2Body:
       "Regras semânticas avaliam preços não verificados na LP (A01), ausência de CTA nas descrições (A02) e garantias absolutas (A03). Usa prompts nativos em Português (PROMPT_PT) e Inglês (PROMPT_EN) com isolamento XML <ad_payload> contra prompt injection, validados via Pydantic com 1 retry automático de autocorreção.",
@@ -832,9 +832,24 @@ function runLiveEvaluation(highlightAnimation = false) {
     });
   }
 
-  if (activeDescriptions.length < 2 || activeDescriptions.length > 4) {
+  // D02: Recommended headline coverage (3 to 14 headlines)
+  if (activeHeadlines.length >= 3 && activeHeadlines.length < 15) {
     deterministicIssues.push({
       rule_id: "D02",
+      severity: "warning",
+      message:
+        lang === "pt"
+          ? "Menos de 15 títulos fornecidos; adicione todos os 15 para rotação ideal."
+          : "Fewer than 15 headlines provided; add all 15 headlines for optimal rotation.",
+      location: null,
+      source: "code",
+    });
+  }
+
+  // D03: Description count bounds (2 to 4)
+  if (activeDescriptions.length < 2 || activeDescriptions.length > 4) {
+    deterministicIssues.push({
+      rule_id: "D03",
       severity: "error",
       message:
         lang === "pt"
@@ -916,10 +931,10 @@ function runLiveEvaluation(highlightAnimation = false) {
     });
   }
 
-  // D07: Final URL HTTPS
+  // D11: Final URL HTTPS
   if (!finalUrl.startsWith("https://") || /\s/.test(finalUrl)) {
     deterministicIssues.push({
-      rule_id: "D07",
+      rule_id: "D11",
       severity: "error",
       message:
         lang === "pt"
@@ -996,8 +1011,8 @@ function runLiveEvaluation(highlightAnimation = false) {
     }
   });
 
-  // D11: Primary service mention in first 5 headlines
-  if (primaryService && activeHeadlines.length >= 3) {
+  // D07: Primary service mention in top 5 headlines
+  if (primaryService && activeHeadlines.length >= 5) {
     const normService = primaryService.toLowerCase();
     const serviceWords = normService.split(/\s+/).filter((w) => w.length >= 3);
     const top5 = activeHeadlines.slice(0, 5);
@@ -1017,14 +1032,14 @@ function runLiveEvaluation(highlightAnimation = false) {
       }
     });
 
-    if (matchCount === 0) {
+    if (matchCount < 3) {
       deterministicIssues.push({
-        rule_id: "D11",
+        rule_id: "D07",
         severity: "warning",
         message:
           lang === "pt"
-            ? "Nenhum dos primeiros títulos menciona o serviço principal."
-            : "None of the top headlines mention the primary service.",
+            ? "Menos de 3 dos primeiros 5 títulos mencionam o serviço principal."
+            : "Fewer than 3 of the first 5 headlines mention the primary service.",
         location: null,
         source: "code",
       });

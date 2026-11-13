@@ -53,16 +53,16 @@ flowchart LR
 | ID | Regra | Autoridade | Severidade | Impacto |
 | :--- | :--- | :--- | :--- | :--- |
 | **`D01`** | Quantidade de títulos `< 3` ou `> 15` | Código Determinístico | `error` | `-15 pts` |
-| **`D02`** | Quantidade de descrições `< 2` ou `> 4` | Código Determinístico | `error` | `-15 pts` |
-| **`D03`** | Título ou descrição vazia (ou apenas espaços) | Código Determinístico | `error` | `-15 pts` |
+| **`D02`** | Cobertura recomendada de títulos (`< 15` títulos fornecidos) | Código Determinístico | `warning` | `-5 pts` |
+| **`D03`** | Quantidade de descrições `< 2` ou `> 4` | Código Determinístico | `error` | `-15 pts` |
 | **`D04`** | Título com mais de `30` caracteres (NFC) | Código Determinístico | `error` | `-15 pts` |
 | **`D05`** | Descrição com mais de `90` caracteres (NFC) | Código Determinístico | `error` | `-15 pts` |
 | **`D06`** | `path1` ou `path2` com mais de `15` caracteres | Código Determinístico | `error` | `-15 pts` |
-| **`D07`** | `final_url` não inicia com `https://` | Código Determinístico | `error` | `-15 pts` |
-| **`D08`** | Títulos ou descrições duplicadas (normalizadas) | Código Determinístico | `error` | `-15 pts` |
-| **`D09`** | Pontuação proibida (`!!`, `??`, `!...`) ou `!` em título | Código Determinístico | `error` | `-15 pts` |
+| **`D07`** | Serviço principal (`primary_service`) ausente nos primeiros 5 títulos | Código Determinístico | `warning` | `-5 pts` |
+| **`D08`** | Títulos duplicados (normalizados) | Código Determinístico | `error` | `-15 pts` |
+| **`D09`** | Pontuação proibida ou repetida (`!!`, `??`, `!...`) | Código Determinístico | `error` | `-15 pts` |
 | **`D10`** | Palavra em CAIXA ALTA (`>= 4` letras, fora da lista de siglas) | Código Determinístico | `warning` | `-5 pts` |
-| **`D11`** | Serviço principal (`primary_service`) ausente de todos os títulos | Código Determinístico | `warning` | `-5 pts` |
+| **`D11`** | URL final ausente, malformada ou não HTTPS | Código Determinístico | `error` | `-15 pts` |
 | **`A01`** | Preço, desconto ou condição concreta ausente do `lp_context` | LLM + Filtro de Código | `error` | `-15 pts` |
 | **`A02`** | Nenhuma descrição possui chamada para ação (CTA) clara | LLM + Filtro de Código | `warning` | `-5 pts` |
 | **`A03`** | Promessa clínica/financeira absoluta (ex.: `"resultado 100% garantido"`) | LLM + Filtro de Código | `warning` | `-5 pts` |

@@ -53,16 +53,16 @@ flowchart LR
 | ID | Rule | Authority | Severity | Impact |
 | :--- | :--- | :--- | :--- | :--- |
 | **`D01`** | Headline count `< 3` or `> 15` | Deterministic Code | `error` | `-15 pts` |
-| **`D02`** | Description count `< 2` or `> 4` | Deterministic Code | `error` | `-15 pts` |
-| **`D03`** | Empty or whitespace-only headline/description | Deterministic Code | `error` | `-15 pts` |
+| **`D02`** | Recommended headline coverage (`< 15` headlines provided) | Deterministic Code | `warning` | `-5 pts` |
+| **`D03`** | Description count `< 2` or `> 4` | Deterministic Code | `error` | `-15 pts` |
 | **`D04`** | Headline length `> 30` characters (NFC) | Deterministic Code | `error` | `-15 pts` |
 | **`D05`** | Description length `> 90` characters (NFC) | Deterministic Code | `error` | `-15 pts` |
 | **`D06`** | `path1` or `path2` length `> 15` characters | Deterministic Code | `error` | `-15 pts` |
-| **`D07`** | `final_url` does not start with `https://` | Deterministic Code | `error` | `-15 pts` |
-| **`D08`** | Duplicate headlines or descriptions (case/space-normalized) | Deterministic Code | `error` | `-15 pts` |
-| **`D09`** | Prohibited punctuation (`!!`, `??`, `!...`) or exclamation in headline | Deterministic Code | `error` | `-15 pts` |
+| **`D07`** | Primary service (`primary_service`) absent from top 5 headlines | Deterministic Code | `warning` | `-5 pts` |
+| **`D08`** | Duplicate headlines (case/space-normalized) | Deterministic Code | `error` | `-15 pts` |
+| **`D09`** | Prohibited punctuation (`!!`, `??`, `!...`) | Deterministic Code | `error` | `-15 pts` |
 | **`D10`** | Excessive ALL CAPS word (`>= 4` letters, outside allowlisted acronyms) | Deterministic Code | `warning` | `-5 pts` |
-| **`D11`** | Primary service (`primary_service`) absent from all headlines | Deterministic Code | `warning` | `-5 pts` |
+| **`D11`** | Final URL is missing, malformed, or not HTTPS | Deterministic Code | `error` | `-15 pts` |
 | **`A01`** | Concrete price, discount, or offer absent from `lp_context` | LLM + Code Filter | `error` | `-15 pts` |
 | **`A02`** | No description contains a clear Call-to-Action (CTA) | LLM + Code Filter | `warning` | `-5 pts` |
 | **`A03`** | Absolute clinical/financial outcome guarantee (e.g., `"100% guaranteed"`) | LLM + Code Filter | `warning` | `-5 pts` |
