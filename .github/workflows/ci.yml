@@ -61,7 +61,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Semgrep OWASP Top 10 + Python + FastAPI rulesets
-        run: semgrep scan --config p/owasp-top-ten --config p/python --config p/fastapi --error --metrics=off src/
+        run: semgrep scan --config p/owasp-top-ten --config p/python --config p/fastapi --error --metrics=off src/ scripts/ evals/
 
   secrets:
     runs-on: ubuntu-latest
@@ -83,4 +83,3 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --frozen
       - run: uv run pip-audit
-        continue-on-error: true
