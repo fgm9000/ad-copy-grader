@@ -21,7 +21,7 @@ Como microsserviço público de portfólio conectado a uma API paga de LLM (Open
    - *Prós:* Configuração inicial simples.
    - *Contras:* Viola boas práticas modernas de segurança em nuvem; chaves estáticas não expiram automaticamente e exigem rotação manual.
 3. **Cloud Run (`min-instances=0`, `max-instances=1`, `concurrency=10`) + Rate Limiter em Memória + Workload Identity Federation (Escolhida):**
-   - *Prós:* `min-instances=0` escala a zero quando ocioso (`US$ 0,00/mês`). `max-instances=1` trava o teto de computação e garante que o `StrictRateLimiter` em memória (`5 req/min/IP` e teto de `200 req/dia` UTC em `limits.py`) seja globalmente consistente para todas as requisições ativas sem depender de Redis. O Workload Identity Federation (OIDC) autentica o GitHub Actions no GCP com tokens efêmeros restritos à branch `refs/heads/main`.
+   - *Prós:* `min-instances=0` escala a zero quando ocioso (`US$ 0,00/mês`). `max-instances=1` trava o teto de computação e garante que o `RateLimiter` em memória (`5 req/min/IP` e teto de `200 req/dia` UTC em `limits.py`) seja globalmente consistente para todas as requisições ativas sem depender de Redis. O Workload Identity Federation (OIDC) autentica o GitHub Actions no GCP com tokens efêmeros restritos à branch `refs/heads/main`.
 
 ## Decisão
 
@@ -30,4 +30,4 @@ Fazer deploy no **Google Cloud Run** (`us-central1`) com `--min-instances=0 --ma
 ## Consequências
 
 - **Positivas:** Custo ocioso zero, proteção rígida de gasto diário com LLM e zero chaves JSON estáticas do GCP no GitHub.
-- **Negativas / Trade-offs:** Um *cold start* após período de inatividade reinicia o contador diário em memória (trade-off aceitável para proteção de demo; em ambiente multi-instância bastaria trocar a implementação de `StrictRateLimiter` por Redis mantendo a mesma interface).
+- **Negativas / Trade-offs:** Um *cold start* após período de inatividade reinicia o contador diário em memória (trade-off aceitável para proteção de demo; em ambiente multi-instância bastaria trocar a implementação de `RateLimiter` por Redis mantendo a mesma interface).

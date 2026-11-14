@@ -7,7 +7,7 @@
 
 ## Contexto
 
-Anúncios Responsivos de Pesquisa (RSAs) do Google Ads precisam respeitar tanto **regras mecânicas exatas** (máx. 30 caracteres por título, máx. 90 por descrição, máx. 15 por path, esquema `https://`, ausência de duplicatas, proibição de `!` em títulos) quanto **regras semânticas** (ausência de preços/ofertas não confirmados na Landing Page, presença de CTA claro e ausência de garantias clínicas/financeiras absolutas).
+Anúncios Responsivos de Pesquisa (RSAs) do Google Ads precisam respeitar tanto **regras mecânicas exatas** (máx. 30 caracteres por título, máx. 90 por descrição, máx. 15 por path, esquema `https://`, ausência de duplicatas, proibição de pontuação repetida como `!!`, `??` ou `...`) quanto **regras semânticas** (ausência de preços/ofertas não confirmados na Landing Page, presença de CTA claro e ausência de garantias clínicas/financeiras absolutas).
 
 Modelos de linguagem erram contagens de caracteres devido à tokenização por subpalavras, ocasionalmente alucinam regras determinísticas e frequentemente sugerem reescritas que estouram o limite de 30 caracteres.
 

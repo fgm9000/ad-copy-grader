@@ -14,7 +14,7 @@ O `ad-copy-grader` é um serviço *stateless* em **FastAPI + Pydantic v2** que a
 sequenceDiagram
     participant Client as Web Demo / Cliente API
     participant API as FastAPI (/v1/grade)
-    participant Limiter as StrictRateLimiter
+    participant Limiter as RateLimiter
     participant Rules as Motor Determinístico (D01-D11)
     participant LLM as OpenRouter / FakeModelClient
     participant Parser as Output Parser (Pydantic + Retry)
@@ -65,7 +65,7 @@ sequenceDiagram
 
 1. **Defesa contra Prompt Injection:** Títulos, descrições e contexto da Landing Page enviados pelo usuário são encapsulados em tags `<ad_payload>...</ad_payload>` com instruções explícitas no prompt tratando o conteúdo como dado não-confiável a ser auditado, jamais como comando.
 2. **Autoridade do Código no Servidor:** Mesmo que um LLM alucine uma regra determinística (`D01–D11`), um índice fora dos limites do anúncio ou um falso positivo de `A01` para um preço que consta no `lp_context`, `filter_llm_issues()` descarta o apontamento de forma determinística no servidor.
-3. **Zero PII / Texto de Anúncio em Logs:** Os logs registram apenas metadados (`status_code`, `lang`, `headlines_count`, `descriptions_count`, `triggered_rules`, `score`, `grade_10`, `latency_ms`) — nunca o texto do anúncio nem chaves de API.
+3. **Zero PII / Texto de Anúncio em Logs:** Os logs registram apenas metadados (`event`, `lang`, `headline_count`, `description_count`, `rules_triggered`, `score`, `grade_10`, `passed`, `degraded`, `latency_ms`, `forwarded_hops`) — nunca o texto do anúncio, o IP do cliente ou chaves de API. `forwarded_hops` conta as entradas do `X-Forwarded-For` (não os valores) para comprovar a cadeia de proxy do Cloud Run antes de confiar num hop específico no rate limit.
 4. **Varredura de Segurança em Múltiplas Camadas na CI:**
    - **Ruff (`S` / `flake8-bandit`):** Checagem rápida de AST em todo commit.
    - **Semgrep OSS (`p/owasp-top-ten`, `p/python`, `p/fastapi`):** Job bloqueante de SAST em `.github/workflows/ci.yml`.
@@ -112,15 +112,16 @@ gcloud secrets add-iam-policy-binding openrouter-api-key \
   --member="serviceAccount:ad-copy-grader-runtime@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 
-# 6. Crie a Service Account de Deploy (Cloud Run Admin + Artifact Registry Writer)
+# 6. Crie a Service Account de Deploy (Cloud Run Developer + Artifact Registry Writer só no repositório)
 gcloud iam service-accounts create ad-copy-grader-deployer \
   --display-name="GitHub Actions Cloud Run Deployer SA"
 
 gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
   --member="serviceAccount:ad-copy-grader-deployer@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/run.admin"
+  --role="roles/run.developer"
 
-gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
+gcloud artifacts repositories add-iam-policy-binding ad-copy-grader \
+  --location="us-central1" \
   --member="serviceAccount:ad-copy-grader-deployer@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/artifactregistry.writer"
 

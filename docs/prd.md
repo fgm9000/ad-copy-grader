@@ -60,6 +60,8 @@ Executed in pure Python over Unicode `NFC`-normalized strings with zero external
 | `D10` | Excessive capitalization (ALL CAPS) | `warning` | Whole word with `>= 4` uppercase letters (excluding an allowlist of standard acronyms) |
 | `D11` | Valid HTTPS final URL | `error` | Missing, malformed, or non-`https://` `final_url` |
 
+> **Schema vs. rule limits:** the request schema (`models.py`) accepts up to 30 headlines and 8 descriptions, so oversized ads reach the engine and `D01`/`D03` can report them instead of failing with a generic `422`.
+
 ### FR-02: Semantic Rule Engine via LLM (`A01–A03`)
 Executed via OpenRouter (`google/gemini-2.5-flash` by default) in JSON mode:
 

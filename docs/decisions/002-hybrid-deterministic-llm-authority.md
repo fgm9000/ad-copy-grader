@@ -7,7 +7,7 @@
 
 ## Context
 
-Google Ads Responsive Search Ads (RSAs) must satisfy both **exact mechanical rules** (e.g., max 30 characters per headline, max 90 per description, max 15 per path, `https://` scheme, no duplicate assets, no exclamation marks in headlines) and **semantic rules** (e.g., no unverified price or discount claims absent from the landing page, presence of a clear CTA, no absolute clinical/financial guarantees).
+Google Ads Responsive Search Ads (RSAs) must satisfy both **exact mechanical rules** (e.g., max 30 characters per headline, max 90 per description, max 15 per path, `https://` scheme, no duplicate assets, no repeated punctuation such as `!!`, `??` or `...`) and **semantic rules** (e.g., no unverified price or discount claims absent from the landing page, presence of a clear CTA, no absolute clinical/financial guarantees).
 
 LLMs frequently miscount character lengths due to subword tokenization, occasionally hallucinate deterministic violations, and sometimes generate rewrite suggestions that themselves exceed the 30-character limit.
 
