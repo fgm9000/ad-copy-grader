@@ -21,7 +21,7 @@ As a public portfolio microservice that calls a paid LLM API (OpenRouter), the d
    - *Pros:* Quick initial setup.
    - *Cons:* Violates modern cloud security best practices; long-lived keys can be leaked and require manual rotation.
 3. **Cloud Run (`min-instances=0`, `max-instances=1`, `concurrency=10`) + In-Memory Rate Limiter + Workload Identity Federation (Selected):**
-   - *Pros:* `min-instances=0` scales to zero when idle (`$0.00/month`). `max-instances=1` caps both compute spend and ensures that the in-memory `StrictRateLimiter` (`5 req/min/IP` and `200 req/day` UTC cap in `limits.py`) is globally authoritative across all live requests without needing Redis. Workload Identity Federation (OIDC) authenticates GitHub Actions to GCP using short-lived tokens restricted to `refs/heads/main`.
+   - *Pros:* `min-instances=0` scales to zero when idle (`$0.00/month`). `max-instances=1` caps both compute spend and ensures that the in-memory `RateLimiter` (`5 req/min/IP` and `200 req/day` UTC cap in `limits.py`) is globally authoritative across all live requests without needing Redis. Workload Identity Federation (OIDC) authenticates GitHub Actions to GCP using short-lived tokens restricted to `refs/heads/main`.
 
 ## Decision
 
@@ -30,4 +30,4 @@ Deploy to **Google Cloud Run** (`us-central1`) with `--min-instances=0 --max-ins
 ## Consequences
 
 - **Positive:** Zero idle cost, hard daily LLM spend protection, and zero static GCP keys in GitHub.
-- **Negative / Trade-off:** A cold start after inactivity resets the in-memory daily counter (acceptable for low-cost demo protection; a production multi-tenant deployment would swap `StrictRateLimiter` for Redis while keeping the same interface).
+- **Negative / Trade-off:** A cold start after inactivity resets the in-memory daily counter (acceptable for low-cost demo protection; a production multi-tenant deployment would swap `RateLimiter` for Redis while keeping the same interface).

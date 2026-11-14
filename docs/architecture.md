@@ -14,7 +14,7 @@
 sequenceDiagram
     participant Client as Web Demo / API Caller
     participant API as FastAPI (/v1/grade)
-    participant Limiter as StrictRateLimiter
+    participant Limiter as RateLimiter
     participant Rules as Deterministic Engine (D01-D11)
     participant LLM as OpenRouter / FakeModelClient
     participant Parser as Output Parser (Pydantic + Retry)
@@ -65,7 +65,7 @@ sequenceDiagram
 
 1. **Prompt Injection Defense:** User-supplied headlines, descriptions, and landing page context are serialized inside `<ad_payload>...</ad_payload>` tags with explicit system instructions treating them strictly as untrusted data to be audited, never as instructions.
 2. **Server Code Authority:** Even if an LLM hallucinates a deterministic rule (`D01–D11`), an out-of-bounds field index, or a false-positive `A01` price violation for a price present in `lp_context`, `filter_llm_issues()` deterministically strips it on the server.
-3. **Zero PII / Ad Copy in Logs:** Request logs emit only metadata (`status_code`, `lang`, `headlines_count`, `descriptions_count`, `triggered_rules`, `score`, `grade_10`, `latency_ms`) — never raw ad text or API keys.
+3. **Zero PII / Ad Copy in Logs:** Request logs emit only metadata (`event`, `lang`, `headline_count`, `description_count`, `rules_triggered`, `score`, `grade_10`, `passed`, `degraded`, `latency_ms`, `forwarded_hops`) — never raw ad text, client IPs or API keys. `forwarded_hops` counts `X-Forwarded-For` entries (not their values) to verify the Cloud Run proxy chain before trusting a specific hop for rate limiting.
 4. **Multi-Layer CI Security Scanning:**
    - **Ruff (`S` / `flake8-bandit`):** Fast AST security checks on every commit.
    - **Semgrep OSS (`p/owasp-top-ten`, `p/python`, `p/fastapi`):** Blocking SAST job in `.github/workflows/ci.yml`.
@@ -112,15 +112,16 @@ gcloud secrets add-iam-policy-binding openrouter-api-key \
   --member="serviceAccount:ad-copy-grader-runtime@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 
-# 6. Create Deployer Service Account (Cloud Run Admin + Artifact Registry Writer)
+# 6. Create Deployer Service Account (Cloud Run Developer + Artifact Registry Writer on the repo only)
 gcloud iam service-accounts create ad-copy-grader-deployer \
   --display-name="GitHub Actions Cloud Run Deployer SA"
 
 gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
   --member="serviceAccount:ad-copy-grader-deployer@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
-  --role="roles/run.admin"
+  --role="roles/run.developer"
 
-gcloud projects add-iam-policy-binding "${GCP_PROJECT_ID}" \
+gcloud artifacts repositories add-iam-policy-binding ad-copy-grader \
+  --location="us-central1" \
   --member="serviceAccount:ad-copy-grader-deployer@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
   --role="roles/artifactregistry.writer"
 

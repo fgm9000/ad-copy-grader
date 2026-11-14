@@ -61,6 +61,8 @@ Executado em Python puro sobre strings normalizadas em Unicode `NFC`, sem chamad
 | `D10` | Uso abusivo de CAIXA ALTA | `warning` | Palavra inteira com `>= 4` letras maiúsculas (exceto lista de siglas permitidas EN/PT) |
 | `D11` | URL final HTTPS válida | `error` | `final_url` ausente, malformada ou sem esquema `https://` |
 
+> **Limites do schema × limites das regras:** o schema da requisição (`models.py`) aceita até 30 títulos e 8 descrições; assim, anúncios acima do limite chegam ao motor e `D01`/`D03` os apontam, em vez de um `422` genérico.
+
 ### FR-02: Motor Semântico via LLM (`A01–A03`) com Prompts Nativos `EN` e `PT`
 Executado via OpenRouter (`google/gemini-2.5-flash` por padrão) em modo JSON, selecionando `PROMPT_EN` ou `PROMPT_PT` conforme `ad.lang`:
 

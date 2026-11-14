@@ -45,19 +45,22 @@ gcloud artifacts repositories create ad-copy-grader \
 ```
 
 ### 2.4 Configuração do Secret Manager
-Mesmo executando a demonstração pública com `FAKE_MODEL=true` (custo zero de inferência externa), o container monta `OPENROUTER_API_KEY` a partir do Google Cloud Secret Manager para exercitar continuamente a injeção de segredos de produção:
+O secret foi criado com um valor placeholder enquanto a demo rodava com `FAKE_MODEL=true`. Desde 13/11/2026 o serviço roda com `FAKE_MODEL=false` (LLM real), e a chave real entrou como uma nova versão do secret. O valor é sempre lido do stdin e nunca escrito em comando versionado:
 ```bash
 printf "sk-or-v1-placeholder-fake-model-enabled" | gcloud secrets create openrouter-api-key \
   --data-file=- \
   --replication-policy=automatic \
   --project=fgm9000-portfolio
+
+# Add the real key as a new version (paste it, then Ctrl+D)
+gcloud secrets versions add openrouter-api-key --data-file=- --project=fgm9000-portfolio
 ```
 
 ### 2.5 Service Accounts de Menor Privilégio (Separação entre Runtime e Deployer)
 Duas Service Accounts distintas garantem separação de responsabilidades entre o container em execução e o pipeline de CI/CD:
 
 1. **Runtime SA (`ad-copy-grader-runtime`):** Anexada à revisão do Cloud Run. Possui **apenas** `roles/secretmanager.secretAccessor` no segredo `openrouter-api-key`.
-2. **Deployer SA (`ad-copy-grader-deployer`):** Assumida pelo GitHub Actions via OIDC. Possui `roles/run.admin`, `roles/artifactregistry.writer` e `roles/iam.serviceAccountUser` sobre a Runtime SA.
+2. **Deployer SA (`ad-copy-grader-deployer`):** Assumida pelo GitHub Actions via OIDC. Possui `roles/run.developer` no projeto (publica revisões, não altera políticas de IAM), `roles/artifactregistry.writer` só no repositório `ad-copy-grader` e `roles/iam.serviceAccountUser` só sobre a Runtime SA. O acesso público não exige `run.admin`: ver §2.8.
 
 ```bash
 gcloud iam service-accounts create ad-copy-grader-runtime \
@@ -75,11 +78,13 @@ gcloud secrets add-iam-policy-binding openrouter-api-key \
 
 gcloud projects add-iam-policy-binding fgm9000-portfolio \
   --member="serviceAccount:ad-copy-grader-deployer@fgm9000-portfolio.iam.gserviceaccount.com" \
-  --role="roles/run.admin"
+  --role="roles/run.developer"
 
-gcloud projects add-iam-policy-binding fgm9000-portfolio \
+gcloud artifacts repositories add-iam-policy-binding ad-copy-grader \
+  --location=us-central1 \
   --member="serviceAccount:ad-copy-grader-deployer@fgm9000-portfolio.iam.gserviceaccount.com" \
-  --role="roles/artifactregistry.writer"
+  --role="roles/artifactregistry.writer" \
+  --project=fgm9000-portfolio
 
 gcloud iam service-accounts add-iam-policy-binding \
   ad-copy-grader-runtime@fgm9000-portfolio.iam.gserviceaccount.com \
@@ -100,8 +105,8 @@ gcloud iam workload-identity-pools providers create-oidc github-provider \
   --workload-identity-pool="github-pool" \
   --display-name="GitHub OIDC Provider" \
   --issuer-uri="https://token.actions.githubusercontent.com" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner,attribute.ref=assertion.ref" \
-  --attribute-condition="assertion.repository_owner == 'fgm9000' && assertion.repository == 'fgm9000/ad-copy-grader' && assertion.ref == 'refs/heads/main'" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.ref=assertion.ref" \
+  --attribute-condition="assertion.repository == 'fgm9000/ad-copy-grader' && assertion.ref == 'refs/heads/main'" \
   --project=fgm9000-portfolio
 
 gcloud iam service-accounts add-iam-policy-binding \
@@ -116,9 +121,48 @@ gcloud iam service-accounts add-iam-policy-binding \
 gh variable set GCP_PROJECT_ID --body "fgm9000-portfolio" -R fgm9000/ad-copy-grader
 gh variable set GCP_WIF_PROVIDER --body "projects/316736391681/locations/global/workloadIdentityPools/github-pool/providers/github-provider" -R fgm9000/ad-copy-grader
 gh variable set GCP_SERVICE_ACCOUNT --body "ad-copy-grader-deployer@fgm9000-portfolio.iam.gserviceaccount.com" -R fgm9000/ad-copy-grader
-gh variable set FAKE_MODEL --body "true" -R fgm9000/ad-copy-grader
+gh variable set FAKE_MODEL --body "false" -R fgm9000/ad-copy-grader
 gh variable set ALLOWED_ORIGINS --body "https://fgm9000.github.io" -R fgm9000/ad-copy-grader
 ```
+
+O `FAKE_MODEL` começou como `true` (demo offline) e passou para `false` em 13/11/2026, quando a chave real entrou no Secret Manager.
+
+
+### 2.8 Bootstrap Único do Acesso Público (Só a Conta Dona)
+O acesso público usa só `--no-invoker-iam-check` (sem binding `allUsers` no IAM). Ligar essa configuração exige `run.services.setIamPolicy`, que o `run.developer` não tem; por isso a conta dona do projeto roda o comando uma vez, e os deploys seguintes do GitHub mantêm a configuração sem precisar de permissão de IAM:
+```bash
+gcloud run services update ad-copy-grader \
+  --region=us-central1 \
+  --no-invoker-iam-check \
+  --project=fgm9000-portfolio
+
+# Só se existir um binding antigo de allUsers (é redundante com a configuração acima)
+gcloud run services remove-iam-policy-binding ad-copy-grader \
+  --region=us-central1 \
+  --member="allUsers" \
+  --role="roles/run.invoker" \
+  --project=fgm9000-portfolio
+```
+O workflow de deploy também passa `--max=1` (teto no nível do serviço) junto com `--max-instances=1` (nível da revisão), para o rate limiter em memória sempre enxergar uma única instância.
+
+### 2.9 Política de Limpeza do Artifact Registry
+Cada deploy envia uma imagem com a tag do SHA do commit. O repositório mantém as 10 imagens mais recentes e apaga as mais antigas (voltar mais de 10 deploys exige rebuild):
+```bash
+cat > cleanup-policy.json <<'EOF'
+[
+  {"name": "keep-last-10", "action": {"type": "Keep"}, "mostRecentVersions": {"keepCount": 10}},
+  {"name": "delete-older", "action": {"type": "Delete"}, "condition": {"tagState": "any", "olderThan": "1d"}}
+]
+EOF
+gcloud artifacts repositories set-cleanup-policies ad-copy-grader \
+  --location=us-central1 \
+  --policy=cleanup-policy.json \
+  --no-dry-run \
+  --project=fgm9000-portfolio
+```
+
+### 2.10 Proteção da Branch `main`
+Todo merge na `main` publica no Cloud Run; por isso a `main` só aceita mudanças com os jobs do CI aprovados (sem push direto, sem force push, vale também para administradores). Ver `gh api repos/fgm9000/ad-copy-grader/branches/main/protection`.
 
 ---
 
