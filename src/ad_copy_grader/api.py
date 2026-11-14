@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 
 from ad_copy_grader import __version__
-from ad_copy_grader.limits import RateLimiter, extract_client_ip
+from ad_copy_grader.limits import RateLimiter, count_forwarded_hops, extract_client_ip
 from ad_copy_grader.llm import (
     FakeModelClient,
     LlmClientError,
@@ -223,6 +223,7 @@ def log_grade_event(
     ad: AdInput,
     result: GradeResult,
     latency_ms: float,
+    forwarded_hops: int,
 ) -> None:
     """Log structured event for ad grading completion without sensitive data."""
     payload = {
@@ -236,6 +237,7 @@ def log_grade_event(
         "passed": result.passed,
         "degraded": result.degraded_reason is not None,
         "latency_ms": round(latency_ms, 2),
+        "forwarded_hops": forwarded_hops,
     }
     logger.info(json.dumps(payload))
 
@@ -309,8 +311,10 @@ def create_app(
         strict_llm: Annotated[bool, Query()] = False,
     ) -> Response | GradeResult:
         """Grade a Responsive Search Ad with deterministic and LLM evaluation."""
+        forwarded_for = request.headers.get("x-forwarded-for")
+        forwarded_hops = count_forwarded_hops(forwarded_for)
         client_ip = extract_client_ip(
-            request.headers.get("x-forwarded-for"),
+            forwarded_for,
             request.client.host if request.client else None,
         )
 
@@ -329,7 +333,7 @@ def create_app(
             except (LlmClientError, LlmOutputError):
                 fallback = build_degraded_result(ad)
                 latency_ms = (time.perf_counter() - start_time) * 1000.0
-                log_grade_event(ad, fallback, latency_ms)
+                log_grade_event(ad, fallback, latency_ms, forwarded_hops)
                 return JSONResponse(
                     status_code=502,
                     content={
@@ -341,7 +345,7 @@ def create_app(
             result = await grade_with_degradation(ad, client)
 
         latency_ms = (time.perf_counter() - start_time) * 1000.0
-        log_grade_event(ad, result, latency_ms)
+        log_grade_event(ad, result, latency_ms, forwarded_hops)
         return result
 
     return app

@@ -321,7 +321,11 @@ def test_structured_logging_output(
     client = TestClient(app)
 
     with caplog.at_level(logging.INFO, logger="ad_copy_grader.api"):
-        res = client.post("/v1/grade", json=clean_ad_payload_en)
+        res = client.post(
+            "/v1/grade",
+            json=clean_ad_payload_en,
+            headers={"X-Forwarded-For": "198.51.100.7, 203.0.113.195"},
+        )
         assert res.status_code == 200
 
     grade_logs = [
@@ -342,6 +346,8 @@ def test_structured_logging_output(
     assert log_event["degraded"] is False
     assert isinstance(log_event["latency_ms"], float)
     assert log_event["latency_ms"] >= 0.0
+    assert log_event["forwarded_hops"] == 2
+    assert "198.51.100.7" not in json.dumps(log_event)
 
     # Ensure sensitive ad copy text is NEVER in any log message
     for record in caplog.records:
@@ -363,7 +369,7 @@ def test_log_grade_event_direct(clean_ad_payload_en: dict[str, Any]) -> None:
         model="test-model",
         degraded_reason=None,
     )
-    log_grade_event(ad, result, 12.345)
+    log_grade_event(ad, result, 12.345, 1)
 
 
 def test_create_app_defaults_and_branches() -> None:

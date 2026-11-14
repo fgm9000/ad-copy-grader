@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 
-from ad_copy_grader.limits import RateLimiter, extract_client_ip
+from ad_copy_grader.limits import RateLimiter, count_forwarded_hops, extract_client_ip
 
 
 class MockClock:
@@ -180,3 +180,12 @@ def test_extract_client_ip() -> None:
 
     # Empty header and None host falls back to "unknown"
     assert extract_client_ip("", None) == "unknown"
+
+
+def test_count_forwarded_hops() -> None:
+    """Count X-Forwarded-For entries without exposing the IPs."""
+    assert count_forwarded_hops(None) == 0
+    assert count_forwarded_hops("") == 0
+    assert count_forwarded_hops(" , ,") == 0
+    assert count_forwarded_hops("203.0.113.195") == 1
+    assert count_forwarded_hops("1.2.3.4, 203.0.113.195") == 2
