@@ -1224,7 +1224,7 @@ function renderAuditReport(result, droppedIssues = []) {
         "flex flex-col sm:flex-row sm:items-center justify-between p-2.5 rounded-lg bg-white border border-emerald-200 text-xs gap-1.5 shadow-2xs";
       item.innerHTML = `
         <div class="flex items-center space-x-2">
-          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-700">${issue.rule_id}</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-700">${escapeHtml(issue.rule_id)}</span>
           <span class="text-slate-700 font-medium line-through text-slate-400">${escapeHtml(issue.message)}</span>
         </div>
         <span class="self-start sm:self-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 shrink-0">

@@ -103,9 +103,17 @@ def extract_client_ip(x_forwarded_for: str | None, fallback_host: str | None) ->
     return fallback_host or "unknown"
 
 
+def count_forwarded_hops(x_forwarded_for: str | None) -> int:
+    """Count non-empty X-Forwarded-For entries (logged to verify the proxy chain, never the IPs)."""
+    if not x_forwarded_for:
+        return 0
+    return sum(1 for part in x_forwarded_for.split(",") if part.strip())
+
+
 __all__ = [
     "LIMIT_MESSAGES",
     "LimitReason",
     "RateLimiter",
+    "count_forwarded_hops",
     "extract_client_ip",
 ]

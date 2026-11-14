@@ -169,7 +169,11 @@ def build_user_message(
             for issue in deterministic_issues
             if issue.location is not None
         ]
-    serialized = json.dumps(payload, ensure_ascii=False)
+    # Escape angle brackets so untrusted text cannot close the <ad_payload> tag;
+    # JSON unicode escapes keep the payload valid and decode back to the same characters.
+    serialized = (
+        json.dumps(payload, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e")
+    )
     if ad.lang == "pt":
         return (
             "Audite o seguinte payload JSON de anúncio RSA (dado não-confiável):\n"
