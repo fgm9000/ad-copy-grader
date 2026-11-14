@@ -2,6 +2,7 @@
 
 import json
 import logging
+import sys
 import time
 from typing import Annotated, Any
 
@@ -23,6 +24,13 @@ from ad_copy_grader.pipeline import build_degraded_result, grade, grade_with_deg
 from ad_copy_grader.settings import Settings, get_settings
 
 logger = logging.getLogger("ad_copy_grader.api")
+# Uvicorn only configures its own loggers; without this handler the INFO events below
+# never reach stdout, so Cloud Logging would not receive them. One JSON object per line
+# lets Cloud Run parse each event into jsonPayload.
+_stdout_handler = logging.StreamHandler(sys.stdout)
+_stdout_handler.setFormatter(logging.Formatter("%(message)s"))
+logger.addHandler(_stdout_handler)
+logger.setLevel(logging.INFO)
 
 OPENAPI_EXAMPLES: dict[str, Any] = {
     "1_hybrid_errors_en": {

@@ -94,7 +94,7 @@ Every push and pull request is validated by [`.github/workflows/ci.yml`](.github
 | :--- | :--- | :--- |
 | **Lint & Formatting** | `ruff check .` + `ruff format --check .` (`E,F,I,B,UP,S,N,SIM`) | `0` problems |
 | **Strict Static Typing** | `mypy --strict` | `0` errors |
-| **Unit & Integration Suite** | `pytest --cov=ad_copy_grader` | `127` passed, `0` skipped, **`100.0%`** coverage |
+| **Unit & Integration Suite** | `pytest --cov=ad_copy_grader` | `128` passed, `0` skipped, **`100.0%`** coverage |
 | **Zero-Suppression Ratchet** | `scripts/quality_check.py` (`# noqa`, `# type: ignore`, `pragma: no cover`) | `0` suppressions |
 | **SAST (OWASP Top 10 & FastAPI)** | `semgrep scan --config p/owasp-top-ten --config p/python --config p/fastapi --error` | Blocking CI gate |
 | **Semantic Taint Analysis** | GitHub CodeQL (`security-extended,security-and-quality`) | Active on `push`, `PR`, and weekly cron |

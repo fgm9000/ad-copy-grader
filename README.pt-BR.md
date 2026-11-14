@@ -94,7 +94,7 @@ Todo push e pull request passa por [`.github/workflows/ci.yml`](.github/workflow
 | :--- | :--- | :--- |
 | **Lint & Formatação** | `ruff check .` + `ruff format --check .` (`E,F,I,B,UP,S,N,SIM`) | `0` problemas |
 | **Tipagem Estática Estrita** | `mypy --strict` | `0` erros |
-| **Testes Unitários e Integração** | `pytest --cov=ad_copy_grader` | `127` passando, `0` pulados, **`100.0%`** cobertura |
+| **Testes Unitários e Integração** | `pytest --cov=ad_copy_grader` | `128` passando, `0` pulados, **`100.0%`** cobertura |
 | **Catraca Zero-Supressão** | `scripts/quality_check.py` (`# noqa`, `# type: ignore`, `pragma: no cover`) | `0` supressões |
 | **SAST (OWASP Top 10 & FastAPI)** | `semgrep scan --config p/owasp-top-ten --config p/python --config p/fastapi --error` | Gate bloqueante na CI |
 | **Análise Semântica de Fluxo (Taint)** | GitHub CodeQL (`security-extended,security-and-quality`) | Ativo em `push`, `PR` e cron semanal |

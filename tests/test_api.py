@@ -1,5 +1,6 @@
 """Tests for FastAPI application, health check, grading endpoints, CORS, and settings."""
 
+import io
 import json
 import logging
 from pathlib import Path
@@ -381,3 +382,19 @@ def test_create_app_defaults_and_branches() -> None:
 
     # Module-level app instance
     assert module_app is not None
+
+
+def test_grade_logger_emits_info_json_lines() -> None:
+    """The grade logger has its own INFO handler, so events are written without a root handler."""
+    api_logger = logging.getLogger("ad_copy_grader.api")
+    assert api_logger.getEffectiveLevel() == logging.INFO
+    handler = next(h for h in api_logger.handlers if isinstance(h, logging.StreamHandler))
+
+    buffer = io.StringIO()
+    original = handler.setStream(buffer)
+    try:
+        api_logger.info(json.dumps({"event": "probe"}))
+    finally:
+        handler.setStream(original)
+
+    assert buffer.getvalue() == '{"event": "probe"}\n'
