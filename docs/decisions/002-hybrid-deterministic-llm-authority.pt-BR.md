@@ -35,3 +35,12 @@ Implementar um **Pipeline Híbrido Determinístico + LLM** com separação estri
 
 - **Positivas:** Zero alucinações de contagem de caracteres, sugestões de reescrita garantidamente válidas e resiliência contra indisponibilidade do provedor de LLM.
 - **Negativas / Trade-offs:** Exige manter regras determinísticas e prompts sincronizados, validados continuamente pela suíte de 3 colunas no Promptfoo.
+
+## Adendo (15/11/2026): A02 passa para a autoridade do código
+
+As primeiras execuções reais do Promptfoo mostraram os modelos inventando A02 em anúncios com CTA clara ("Agende sua avaliação hoje") e omitindo A02 em anúncios sem nenhuma CTA, em rodadas diferentes do mesmo caso. Detectar CTA é uma busca de verbo de ação que o código faz com exatidão; por isso o A02 segue o princípio deste ADR: **o código decide, o LLM sugere**.
+
+- `pipeline.check_a02` aponta A02 (`source: "code"`) quando nenhuma descrição contém verbo de ação em EN/PT (regex com limite de palavra); issues A02 do LLM são sempre descartados.
+- O código da regra continua `A02` (contrato da API inalterado) e o LLM continua propondo reescritas com CTA, validadas por `rewrite.py`.
+- O A02 também vale no modo degradado, já que não depende mais do modelo.
+- Trade-off: uma CTA escrita sem nenhum verbo da lista passa despercebida; a lista de verbos é o ponto de extensão.

@@ -35,3 +35,12 @@ Implement a **Hybrid Deterministic + LLM Pipeline** with strict separation of au
 
 - **Positive:** Zero character-count hallucinations, guaranteed-valid rewrite suggestions, and resilience against upstream LLM outages.
 - **Negative / Trade-off:** Requires maintaining both deterministic rules and semantic prompts, verified continuously via the 3-column Promptfoo suite.
+
+## Amendment (2026-11-15): A02 moves to code authority
+
+The first live Promptfoo runs showed models both inventing A02 on ads with a clear CTA ("Agende sua avaliação hoje") and omitting it on ads without any CTA, in different runs of the same case. Detecting a CTA is an action-verb lookup that code does exactly, so A02 now follows the principle of this ADR: **code decides, the LLM suggests**.
+
+- `pipeline.check_a02` flags A02 (`source: "code"`) when no description matches an EN/PT action verb (word-boundary regex); LLM A02 issues are always dropped.
+- The rule ID stays `A02` (API contract unchanged) and the LLM still proposes CTA rewrites, validated by `rewrite.py`.
+- A02 is also enforced in degraded mode, since it no longer depends on the model.
+- Trade-off: a CTA phrased without a listed verb is missed; the verb list is the place to extend.

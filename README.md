@@ -64,7 +64,7 @@ flowchart LR
 | **`D10`** | Excessive ALL CAPS word (`>= 4` letters, outside allowlisted acronyms) | Deterministic Code | `warning` | `-5 pts` |
 | **`D11`** | Final URL is missing, malformed, or not HTTPS | Deterministic Code | `error` | `-15 pts` |
 | **`A01`** | Concrete price, discount, or offer absent from `lp_context` | LLM + Code Filter | `error` | `-15 pts` |
-| **`A02`** | No description contains a clear Call-to-Action (CTA) | LLM + Code Filter | `warning` | `-5 pts` |
+| **`A02`** | No description contains a clear Call-to-Action (CTA) | Code (action-verb lookup) | `warning` | `-5 pts` |
 | **`A03`** | Absolute clinical/financial outcome guarantee (e.g., `"100% guaranteed"`) | LLM + Code Filter | `warning` | `-5 pts` |
 
 **Scoring Formula:**

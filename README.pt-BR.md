@@ -64,7 +64,7 @@ flowchart LR
 | **`D10`** | Palavra em CAIXA ALTA (`>= 4` letras, fora da lista de siglas) | Código Determinístico | `warning` | `-5 pts` |
 | **`D11`** | URL final ausente, malformada ou não HTTPS | Código Determinístico | `error` | `-15 pts` |
 | **`A01`** | Preço, desconto ou condição concreta ausente do `lp_context` | LLM + Filtro de Código | `error` | `-15 pts` |
-| **`A02`** | Nenhuma descrição possui chamada para ação (CTA) clara | LLM + Filtro de Código | `warning` | `-5 pts` |
+| **`A02`** | Nenhuma descrição possui chamada para ação (CTA) clara | Código (busca de verbo de ação) | `warning` | `-5 pts` |
 | **`A03`** | Promessa clínica/financeira absoluta (ex.: `"resultado 100% garantido"`) | LLM + Filtro de Código | `warning` | `-5 pts` |
 
 **Fórmula de Pontuação:**
