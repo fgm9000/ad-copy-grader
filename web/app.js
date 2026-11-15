@@ -1434,7 +1434,7 @@ function applySuggestion(sugg, buttonElement) {
   if (buttonElement) {
     buttonElement.textContent = dict.rewriteApplied;
     buttonElement.className =
-      "px-2.5 py-1 rounded text-xs font-bold bg-emerald-600 text-white shrink-0";
+      "px-2.5 py-1 rounded text-xs font-bold bg-emerald-700 text-white shrink-0";
   }
 
   runLiveEvaluation(true);
