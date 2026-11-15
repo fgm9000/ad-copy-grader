@@ -10,11 +10,18 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from defusedxml import ElementTree
-
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 SUPPRESSION_PATTERN = re.compile(r"(#\s*noqa|#\s*type:\s*ignore|pragma:\s*no\s*cover)")
+PYTEST_COUNT = re.compile(r"(\d+) (passed|skipped|failed|errors?)\b")
+
+
+def _parse_pytest_counts(stdout: str) -> tuple[int, int]:
+    """Read passed/skipped counts from the pytest summary line (no XML parsing needed)."""
+    lines = [line for line in stdout.splitlines() if PYTEST_COUNT.search(line)]
+    summary = lines[-1] if lines else ""
+    counts = {kind: int(number) for number, kind in PYTEST_COUNT.findall(summary)}
+    return counts.get("passed", 0), counts.get("skipped", 0)
 
 
 def measure_ruff(repo_root: Path) -> int:
@@ -59,7 +66,6 @@ def measure_tests_and_coverage(repo_root: Path) -> tuple[int, int, float]:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)
         cov_json_path = tmp_path / "coverage.json"
-        junit_xml_path = tmp_path / "junit.xml"
         cov_data_path = tmp_path / ".coverage"
 
         env = os.environ.copy()
@@ -71,7 +77,6 @@ def measure_tests_and_coverage(repo_root: Path) -> tuple[int, int, float]:
             "pytest",
             "--cov=ad_copy_grader",
             f"--cov-report=json:{cov_json_path}",
-            f"--junitxml={junit_xml_path}",
             "-q",
         ]
         proc = subprocess.run(
@@ -93,27 +98,10 @@ def measure_tests_and_coverage(repo_root: Path) -> tuple[int, int, float]:
                 f"{proc.stdout}\n{proc.stderr}"
             )
 
-        if not junit_xml_path.exists():
-            raise RuntimeError("pytest junit xml output was not generated.")
         if not cov_json_path.exists():
             raise RuntimeError("coverage json report was not generated.")
 
-        tree = ElementTree.parse(junit_xml_path)
-        root = tree.getroot()
-
-        tests_count = 0
-        skipped_count = 0
-        failures_count = 0
-        errors_count = 0
-
-        suite_elements = [root] if root.tag == "testsuite" else root.findall("testsuite")
-        for suite in suite_elements:
-            tests_count += int(suite.attrib.get("tests", 0))
-            skipped_count += int(suite.attrib.get("skipped", 0))
-            failures_count += int(suite.attrib.get("failures", 0))
-            errors_count += int(suite.attrib.get("errors", 0))
-
-        passed_count = tests_count - failures_count - errors_count - skipped_count
+        passed_count, skipped_count = _parse_pytest_counts(proc.stdout)
 
         cov_data = json.loads(cov_json_path.read_text(encoding="utf-8"))
         raw_pct = float(cov_data.get("totals", {}).get("percent_covered", 0.0))

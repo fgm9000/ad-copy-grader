@@ -46,7 +46,7 @@ select = ["E", "F", "I", "B", "UP", "S", "N", "SIM"]
 
 [tool.mypy]
 strict = true
-files = ["src"]
+files = ["src", "tests", "scripts", "evals"]
 python_version = "3.12"
 mypy_path = ["src", "."]
 
