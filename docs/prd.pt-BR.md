@@ -69,7 +69,7 @@ Executado via OpenRouter (`google/gemini-2.5-flash` por padrão) em modo JSON, s
 | ID | Regra | Severidade | Critério de Disparo |
 | --- | --- | --- | --- |
 | `A01` | Preço ou promoção ausente da Landing Page | `error` | Preço numérico, desconto ou oferta concreta no anúncio ausente de `lp_context` |
-| `A02` | Ausência de Call-to-Action (CTA) | `warning` | Nenhuma descrição contém chamada para ação clara. **Decidida por código** desde 15/11/2026 (adendo ao ADR-002); o LLM continua sugerindo reescritas com CTA |
+| `A02` | Ausência de Call-to-Action (CTA) | `warning` | Nenhuma descrição contém chamada para ação clara. O LLM lista as frases de CTA que encontra; o código mantém as que existem literalmente numa descrição e aponta A02 só quando não sobra nenhuma (adendo ao ADR-002, 15/11/2026) |
 | `A03` | Promessa absoluta ou garantia de resultado | `warning` | Garantia indevida ou promessa clínica/regulada (ex.: *"garantido"*, *"100%"*, *"cura"*, *"sem dor"* / *"guaranteed"*, *"cure"*, *"painless"*) |
 
 ### FR-03: Output Parser Resiliente com Loop de Auto-Correção

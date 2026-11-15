@@ -36,7 +36,7 @@ Implementar um **Pipeline Híbrido Determinístico + LLM** com separação estri
 - **Positivas:** Zero alucinações de contagem de caracteres, sugestões de reescrita garantidamente válidas e resiliência contra indisponibilidade do provedor de LLM.
 - **Negativas / Trade-offs:** Exige manter regras determinísticas e prompts sincronizados, validados continuamente pela suíte de 3 colunas no Promptfoo.
 
-## Adendo (15/11/2026): A02 passa para a autoridade do código
+## Adendo (15/11/2026): A02 passa para a autoridade do código — *substituído, ver o último adendo*
 
 As primeiras execuções reais do Promptfoo mostraram os modelos inventando A02 em anúncios com CTA clara ("Agende sua avaliação hoje") e omitindo A02 em anúncios sem nenhuma CTA, em rodadas diferentes do mesmo caso. Detectar CTA é uma busca de verbo de ação que o código faz com exatidão; por isso o A02 segue o princípio deste ADR: **o código decide, o LLM sugere**.
 
@@ -45,6 +45,15 @@ As primeiras execuções reais do Promptfoo mostraram os modelos inventando A02 
 - O A02 também vale no modo degradado, já que não depende mais do modelo.
 - Trade-off: uma CTA escrita sem nenhum verbo da lista passa despercebida; a lista de verbos é o ponto de extensão.
 
-## Adendo (15/11/2026): veto do código no A03
+## Adendo (15/11/2026): veto do código no A03 — *substituído, ver o último adendo*
 
 O A03 continua decidido pelo LLM, mas os evals reais mostraram o modelo apontando frases suaves de benefício em PT ("Recupere Seu Sorriso", "cirurgia guiada de alta precisão") como garantia absoluta. Uma violação de A03 exige palavra de promessa absoluta; por isso `filter_llm_issues` descarta o A03 cujo item localizado não contém nenhuma (garantia, 100%, cura, sem dor, imediato, permanente, definitivo, risco zero, certeza; EN/PT). A03 sem localização é mantido. Trade-off: uma promessa absoluta escrita sem nenhuma palavra da lista passa despercebida; a lista é o ponto de extensão. Resultado: pipeline 48/48 em três rodadas reais (`docs/eval-results.pt-BR.md`).
+
+## Adendo (15/11/2026): conferir a evidência do modelo, não julgar de novo
+
+Os dois adendos anteriores transformaram regras semânticas em listas de palavras (palavras de oferta no A01, verbos de ação no A02, palavras de promessa no A03). Numa suíte held-out com setores inéditos o pipeline ficou abaixo do modelo cru: as listas não cobriam "Pain-Free" nem "Inscreva-se". Decidir se uma frase é oferta, promessa ou chamada para ação é semântico, então fica com o modelo. O código fica só com a conferência de fatos:
+
+- **A01/A03:** o modelo cita as palavras exatas que motivaram cada issue (`evidence`). O código confere se o trecho existe no item apontado (ignorando maiúsculas, acentos, aspas e espaços) e, no A01, se os números citados aparecem no `lp_context`. Issue sem evidência conferível é descartado.
+- **A02:** "nenhuma descrição tem CTA" é uma ausência e não pode ser citada. O modelo lista as frases de CTA que encontra (`cta_phrases`, provas de existência); o código mantém as que existem literalmente numa descrição e aponta A02 (`source: "code"`) só quando não sobra nenhuma. Uma frase inventada não livra o anúncio; uma frase real que não é CTA ainda livra (julgamento do modelo), e uma CTA que o modelo não lista ainda gera um A02 indevido.
+- Sem o LLM (modo degradado) não há extração, então o A02 não é avaliado.
+- IDs de regra, localização, revalidação de reescritas e D01–D11 não mudam. A avaliação usa suítes held-out congeladas antes de cada mudança de desenho (`evals/holdout*.py`, `docs/eval-results.pt-BR.md`).

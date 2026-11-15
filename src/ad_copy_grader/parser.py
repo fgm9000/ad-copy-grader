@@ -45,6 +45,7 @@ class LlmReview(BaseModel):
     issues: list[LlmIssueItem] = Field(default_factory=list)
     rules_checked: list[str]
     suggestions: list[Suggestion] = Field(default_factory=list)
+    cta_phrases: list[str] = Field(default_factory=list)
 
     @field_validator("rules_checked")
     @classmethod

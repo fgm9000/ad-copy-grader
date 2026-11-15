@@ -36,7 +36,7 @@ Implement a **Hybrid Deterministic + LLM Pipeline** with strict separation of au
 - **Positive:** Zero character-count hallucinations, guaranteed-valid rewrite suggestions, and resilience against upstream LLM outages.
 - **Negative / Trade-off:** Requires maintaining both deterministic rules and semantic prompts, verified continuously via the 3-column Promptfoo suite.
 
-## Amendment (2026-11-15): A02 moves to code authority
+## Amendment (2026-11-15): A02 moves to code authority — *superseded, see the last amendment*
 
 The first live Promptfoo runs showed models both inventing A02 on ads with a clear CTA ("Agende sua avaliação hoje") and omitting it on ads without any CTA, in different runs of the same case. Detecting a CTA is an action-verb lookup that code does exactly, so A02 now follows the principle of this ADR: **code decides, the LLM suggests**.
 
@@ -45,6 +45,15 @@ The first live Promptfoo runs showed models both inventing A02 on ads with a cle
 - A02 is also enforced in degraded mode, since it no longer depends on the model.
 - Trade-off: a CTA phrased without a listed verb is missed; the verb list is the place to extend.
 
-## Amendment (2026-11-15): code veto for A03
+## Amendment (2026-11-15): code veto for A03 — *superseded, see the last amendment*
 
 A03 stays LLM-decided, but live evals showed the model flagging soft PT benefit phrases ("Recupere Seu Sorriso", "cirurgia guiada de alta precisão") as absolute guarantees. An A03 violation needs absolute-promise wording, so `filter_llm_issues` drops an A03 whose located asset contains none of it (guarantee, 100%, cure, painless, instant, permanent, definitive, zero risk, certainty; EN/PT). An A03 without location is kept. Trade-off: an absolute promise written without any listed word is missed; the word list is the place to extend. Result: pipeline 48/48 in three live runs (`docs/eval-results.md`).
+
+## Amendment (2026-11-15): verify the model's evidence, do not re-judge it
+
+The two previous amendments turned semantic rules into word lists (offer words for A01, action verbs for A02, promise words for A03). On a held-out suite of unseen verticals the pipeline scored below the raw model: the lists did not cover "Pain-Free" or "Inscreva-se". Deciding whether a phrase is an offer, a promise or a call to action is semantic, so it stays with the model. Code keeps only checks of facts:
+
+- **A01/A03:** the model must quote the exact words behind each issue (`evidence`). Code verifies that the quote exists in the asset it points to (case, accents, quotes and spacing ignored) and, for A01, whether the quoted numbers appear in `lp_context`. Unverifiable issues are dropped.
+- **A02:** "no description has a CTA" is an absence and cannot be quoted. The model lists the CTA phrases it finds (`cta_phrases`, proofs of existence); code keeps the ones that exist verbatim in a description and flags A02 (`source: "code"`) only when none is left. An invented phrase cannot clear an ad; a real phrase that is not actually a CTA still can (the model's judgement), and a CTA the model fails to list still produces a false A02.
+- Without the LLM (degraded mode) there is no extraction, so A02 is not evaluated.
+- Rule IDs, locations, rewrite validation and D01–D11 are unchanged. Evaluation uses held-out suites frozen before each design change (`evals/holdout*.py`, `docs/eval-results.md`).

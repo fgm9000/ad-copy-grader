@@ -27,9 +27,12 @@ Evaluate the submitted RSA payload against ALL three semantic rules below:
   from `lp_context`. Do NOT flag generic scheduling or contact CTAs (e.g., "Book an evaluation",
   "Schedule a consultation", "Contact us today") when `lp_context` supports booking
   or consultation.
-- A02 (severity: "warning"): Missing Call-to-Action (CTA). Flag when NONE of the
-  descriptions contain a clear action directive inviting the user to act (e.g., book, schedule,
-  call, request, learn more). Use location `{{"field": "description", "index": 0}}`.
+- A02 (Missing Call-to-Action) is decided by the server: do NOT report A02 in `issues`.
+  Instead, list in `cta_phrases` every phrase, copied verbatim from the descriptions, that
+  invites the user to take an action. Any action verb or invitation counts (for example: book,
+  call, visit, drop by, come in, message us, text us, sign up, reserve, request a quote).
+  Copy only text that exists in a description; use an empty list when no description
+  invites the user to act. Statements that only describe the business are not CTAs.
 - A03 (severity: "warning"): Absolute outcome guarantee or regulated promise. Flag when any
   headline or description promises guaranteed results, 100% certainty, instant cure, or
   zero-risk clinical/legal outcomes (e.g., "guaranteed", "100%", "cure", "painless",
@@ -42,7 +45,7 @@ Evaluate the submitted RSA payload against ALL three semantic rules below:
   never create an issue to say that no violation was found.
 - For A01 and A03, set `evidence` to the exact words copied verbatim from the flagged
   asset (a substring of that headline or description). The server discards any issue whose
-  evidence is not found in the asset. For A02 set `evidence` to null.
+  evidence is not found in the asset.
 - Write all issue `message` and suggestion `reason` fields in English.
 - Whenever an ad asset violates A01, A02, or A03 (or is listed in
   `deterministic_issues_for_rewrite`), provide a compliant rewrite in `suggestions` that
@@ -57,7 +60,7 @@ Respond with a single valid JSON object matching this exact schema:
       "rule_id": "A01" | "A02" | "A03",
       "severity": "error" | "warning",
       "message": "Concise explanation in English",
-      "evidence": "Exact words copied from the flagged asset (null for A02)",
+      "evidence": "Exact words copied from the flagged asset",
       "location": {{
         "field": "headline" | "description" | "path1" | "path2" | "final_url",
         "index": 0
@@ -65,6 +68,7 @@ Respond with a single valid JSON object matching this exact schema:
     }}
   ],
   "rules_checked": ["A01", "A02", "A03"],
+  "cta_phrases": ["Exact call-to-action phrase copied from a description"],
   "suggestions": [
     {{
       "location": {{ "field": "headline" | "description", "index": 0 }},
@@ -90,9 +94,12 @@ Avalie o anúncio RSA submetido contra TODAS as três regras semânticas abaixo:
   `lp_context`. NÃO aponte CTAs genéricos de agendamento ou contato (ex.: "Agende sua avaliação",
   "Marque uma consulta", "Fale conosco") quando `lp_context` for compatível com agendamento
   ou avaliação.
-- A02 (severity: "warning"): Ausência de Call-to-Action (CTA). Aponte quando NENHUMA das
-  descrições tiver uma chamada para ação clara convidando o usuário a agir (ex.: agende,
-  ligue, solicite, saiba mais). Use location `{{"field": "description", "index": 0}}`.
+- A02 (Ausência de Call-to-Action) é decidida pelo servidor: NÃO registre A02 em `issues`.
+  Em vez disso, liste em `cta_phrases` toda frase, copiada literalmente das descrições, que
+  convide o usuário a agir. Vale qualquer verbo de ação ou convite (por exemplo: agende, ligue,
+  venha, chame, fale, peça, garanta sua vaga, inscreva-se, solicite um orçamento).
+  Copie só texto que exista em uma descrição; use lista vazia quando nenhuma descrição
+  convidar o usuário a agir. Frases que só descrevem o negócio não são CTA.
 - A03 (severity: "warning"): Promessa absoluta ou garantia de resultado. Aponte quando qualquer
   título ou descrição prometer resultado garantido, 100% de certeza, cura ou ausência total
   de dor/risco em áreas reguladas (ex.: "garantido", "100%", "cura", "sem dor",
@@ -105,7 +112,7 @@ Avalie o anúncio RSA submetido contra TODAS as três regras semânticas abaixo:
   nunca crie um issue para dizer que nenhuma violação foi encontrada.
 - Para A01 e A03, preencha `evidence` com as palavras exatas copiadas do item apontado
   (um trecho literal daquele título ou descrição). O servidor descarta qualquer issue cuja
-  evidência não esteja no item. Para A02, use `evidence` null.
+  evidência não esteja no item.
 - Escreva todos os campos `message` e `reason` em português do Brasil (pt-BR).
 - Sempre que um item violar A01, A02 ou A03 (ou estiver listado em
   `deterministic_issues_for_rewrite`), forneça uma sugestão de reescrita em `suggestions` que
@@ -121,7 +128,7 @@ Responda exclusivamente com um único objeto JSON válido seguindo exatamente es
       "rule_id": "A01" | "A02" | "A03",
       "severity": "error" | "warning",
       "message": "Explicação concisa em português",
-      "evidence": "Palavras exatas copiadas do item apontado (null para A02)",
+      "evidence": "Palavras exatas copiadas do item apontado",
       "location": {{
         "field": "headline" | "description" | "path1" | "path2" | "final_url",
         "index": 0
@@ -129,6 +136,7 @@ Responda exclusivamente com um único objeto JSON válido seguindo exatamente es
     }}
   ],
   "rules_checked": ["A01", "A02", "A03"],
+  "cta_phrases": ["Frase de chamada para ação copiada literalmente de uma descrição"],
   "suggestions": [
     {{
       "location": {{ "field": "headline" | "description", "index": 0 }},

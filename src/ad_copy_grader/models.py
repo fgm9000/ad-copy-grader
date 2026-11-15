@@ -90,6 +90,7 @@ class GradeResult(BaseModel):
     rules_checked: list[str]
     model: str | None = None
     degraded_reason: str | None = None
+    cta_phrases: list[str] = Field(default_factory=list)
 
 
 __all__ = [

@@ -277,20 +277,9 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
                 }
             )
 
-    # Check A02 (no description has a clear CTA)
-    if descriptions and not any(CTA_PATTERN.search(d) for d in descriptions):
-        issues.append(
-            {
-                "rule_id": "A02",
-                "severity": "warning",
-                "message": (
-                    "Nenhuma descrição possui uma chamada para ação (CTA) clara."
-                    if lang == "pt"
-                    else "None of the descriptions contain a clear Call-to-Action (CTA)."
-                ),
-                "location": {"field": "description", "index": 0},
-            }
-        )
+    # A02 is decided by the server: extract CTA phrases (verbatim matches) instead.
+    cta_phrases = [m.group(0) for d in descriptions if (m := CTA_PATTERN.search(d))]
+    if descriptions and not cta_phrases:
         suggestions.append(
             {
                 "location": {"field": "description", "index": 0},
@@ -378,6 +367,7 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
             "issues": issues,
             "rules_checked": ["A01", "A02", "A03"],
             "suggestions": suggestions,
+            "cta_phrases": cta_phrases,
         },
         ensure_ascii=False,
     )
