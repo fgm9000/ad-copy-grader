@@ -68,7 +68,7 @@ Executed via OpenRouter (`google/gemini-2.5-flash` by default) in JSON mode:
 | ID | Rule | Severity | Trigger Condition |
 | --- | --- | --- | --- |
 | `A01` | Unverified price or promotion claim | `error` | Numeric price, discount, or concrete promotional offer in the ad is absent from `lp_context` |
-| `A02` | Missing Call-to-Action (CTA) | `warning` | No description contains a clear action directive |
+| `A02` | Missing Call-to-Action (CTA) | `warning` | No description contains a clear action directive. **Decided by code** since 2026-11-15 (ADR-002 amendment); the LLM still proposes CTA rewrites |
 | `A03` | Absolute outcome guarantee | `warning` | Unsubstantiated guarantee or clinical/regulated promise (e.g., *"guaranteed"*, *"100%"*, *"cure"*, *"painless"*) |
 
 ### FR-03: Resilient Output Parser with Self-Correction Retry
