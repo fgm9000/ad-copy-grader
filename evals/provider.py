@@ -7,7 +7,7 @@ import os
 import sys
 import tempfile
 import time
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable, Coroutine
 from pathlib import Path
 from typing import Any
 
@@ -222,7 +222,7 @@ async def _run_single_evaluation(
 
 
 def _run_async(
-    coro: Awaitable[tuple[dict[str, Any], dict[str, int], float]],
+    coro: Coroutine[Any, Any, tuple[dict[str, Any], dict[str, int], float]],
 ) -> tuple[dict[str, Any], dict[str, int], float]:
     """Run coroutine safely in a new event loop."""
     return asyncio.run(coro)
