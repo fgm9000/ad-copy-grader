@@ -44,3 +44,7 @@ The first live Promptfoo runs showed models both inventing A02 on ads with a cle
 - The rule ID stays `A02` (API contract unchanged) and the LLM still proposes CTA rewrites, validated by `rewrite.py`.
 - A02 is also enforced in degraded mode, since it no longer depends on the model.
 - Trade-off: a CTA phrased without a listed verb is missed; the verb list is the place to extend.
+
+## Amendment (2026-11-15): code veto for A03
+
+A03 stays LLM-decided, but live evals showed the model flagging soft PT benefit phrases ("Recupere Seu Sorriso", "cirurgia guiada de alta precisão") as absolute guarantees. An A03 violation needs absolute-promise wording, so `filter_llm_issues` drops an A03 whose located asset contains none of it (guarantee, 100%, cure, painless, instant, permanent, definitive, zero risk, certainty; EN/PT). An A03 without location is kept. Trade-off: an absolute promise written without any listed word is missed; the word list is the place to extend. Result: pipeline 48/48 in three live runs (`docs/eval-results.md`).

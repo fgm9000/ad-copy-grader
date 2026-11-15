@@ -44,3 +44,7 @@ As primeiras execuções reais do Promptfoo mostraram os modelos inventando A02 
 - O código da regra continua `A02` (contrato da API inalterado) e o LLM continua propondo reescritas com CTA, validadas por `rewrite.py`.
 - O A02 também vale no modo degradado, já que não depende mais do modelo.
 - Trade-off: uma CTA escrita sem nenhum verbo da lista passa despercebida; a lista de verbos é o ponto de extensão.
+
+## Adendo (15/11/2026): veto do código no A03
+
+O A03 continua decidido pelo LLM, mas os evals reais mostraram o modelo apontando frases suaves de benefício em PT ("Recupere Seu Sorriso", "cirurgia guiada de alta precisão") como garantia absoluta. Uma violação de A03 exige palavra de promessa absoluta; por isso `filter_llm_issues` descarta o A03 cujo item localizado não contém nenhuma (garantia, 100%, cura, sem dor, imediato, permanente, definitivo, risco zero, certeza; EN/PT). A03 sem localização é mantido. Trade-off: uma promessa absoluta escrita sem nenhuma palavra da lista passa despercebida; a lista é o ponto de extensão. Resultado: pipeline 48/48 em três rodadas reais (`docs/eval-results.pt-BR.md`).
