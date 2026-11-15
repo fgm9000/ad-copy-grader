@@ -1,0 +1,31 @@
+{
+  "headlines": [
+    "Dog Grooming Salon",
+    "Dog Grooming Near You",
+    "Gentle Dog Grooming",
+    "Bath and Haircut Packages",
+    "Nail Trimming",
+    "Breed-Specific Haircuts",
+    "Hypoallergenic Shampoos",
+    "Weekend Appointments",
+    "Certified Groomers",
+    "Puppy First Visits",
+    "Teeth Brushing Add-On",
+    "De-Shedding Treatment",
+    "Clean and Calm Salon",
+    "Pickup Reminders by Text",
+    "Reserve a Grooming Slot"
+  ],
+  "descriptions": [
+    "Gentle dog grooming with certified groomers. Reserve a grooming slot online today.",
+    "Breed-specific haircuts, nail trimming and hypoallergenic shampoos for sensitive skin.",
+    "Weekend appointments and puppy first visits in a clean and calm salon.",
+    "Not sure which package fits? Text us your dog's breed and we will suggest one."
+  ],
+  "path1": "grooming",
+  "path2": "dogs",
+  "final_url": "https://example-grooming.com/dog-grooming",
+  "primary_service": "Dog Grooming",
+  "lp_context": "Happy Paws Dog Grooming offers gentle dog grooming by certified groomers: bath and haircut packages, breed-specific haircuts, nail trimming, teeth brushing, de-shedding and hypoallergenic shampoos for sensitive skin. Weekend appointments and puppy first visits in a clean and calm salon. Pickup reminders by text. Reserve a grooming slot online or text us your dog's breed for a package suggestion.",
+  "lang": "en"
+}

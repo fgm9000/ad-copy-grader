@@ -20,6 +20,8 @@ from evals.holdout import build_holdout_cases
 from evals.holdout import get_tests as get_holdout_tests
 from evals.holdout_v2 import build_holdout_v2_cases
 from evals.holdout_v2 import get_tests as get_holdout_v2_tests
+from evals.holdout_v3 import build_holdout_v3_cases
+from evals.holdout_v3 import get_tests as get_holdout_v3_tests
 from evals.provider import _MEMORY_CACHE, RetryingEvalModelClient, call_api
 
 
@@ -251,3 +253,15 @@ def test_holdout_v2_cases_are_valid_and_code_clean() -> None:
         assert run_rules(AdInput(**case["payload"])) == [], case["name"]
         assert set(case["expected_llm_rules"]) <= {"A01", "A02", "A03"}
     assert [t["vars"]["name"] for t in get_holdout_v2_tests()] == [c["name"] for c in cases]
+
+
+def test_holdout_v3_cases_are_valid_and_code_clean() -> None:
+    """Held-out v3: 10 unique cases, EN/PT, and no deterministic issue (pure A* probes)."""
+    cases = build_holdout_v3_cases()
+    assert len(cases) == 10
+    assert len({c["name"] for c in cases}) == 10
+    assert {AdInput(**c["payload"]).lang for c in cases} == {"en", "pt"}
+    for case in cases:
+        assert run_rules(AdInput(**case["payload"])) == [], case["name"]
+        assert set(case["expected_llm_rules"]) <= {"A01", "A02", "A03"}
+    assert [t["vars"]["name"] for t in get_holdout_v3_tests()] == [c["name"] for c in cases]
