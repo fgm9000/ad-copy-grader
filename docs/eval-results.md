@@ -57,3 +57,25 @@ The code-side vetoes require a located asset; an issue without location is kept.
 ## Other model tried
 
 `deepseek/deepseek-v4-flash` (US$ 0.0044 per full run, reported by Promptfoo): pipeline 5/16 before the A02 and A03 changes (run [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). It reported passed rules as issues; not re-measured on the current code.
+
+## Held-out suite (10 cases never used for tuning)
+
+- **Code:** cases frozen in commit `14fe118` before any live run · `evals/holdout.py`, `evals/promptfooconfig.holdout.yaml`
+- **Verticals:** physiotherapy (EN) and English course (PT), different from the dental cases above
+- **Runs:** [43726575538](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726575538), [43726584348](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726584348), [43726593006](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726593006) · `google/gemini-2.5-flash`
+
+| Column | Run 1 | Run 2 | Run 3 | Total |
+|---|---|---|---|---|
+| 1. Raw LLM | 7/10 | 9/10 | 8/10 | 24/30 (80.0%) |
+| **2. Production pipeline** | **7/10** | **8/10** | **8/10** | **23/30 (76.7%)** |
+| 3. Degraded prompt | 5/10 | 5/10 | 6/10 | 16/30 (53.3%) |
+
+**On unseen cases the pipeline scored below the raw model.** The code vetoes were designed on the dental cases and their word lists do not generalize:
+
+| Case | Pipeline | Cause |
+|---|---|---|
+| H05 "Walk Pain-Free After 1 Visit" (expects A03) | 0/3 | The model flags A03; the A03 veto drops it because "pain-free" is not in the absolute-promise list |
+| H09 "Inscreva-se já" (expects no issue) | 0/3 | Code-decided A02 fires because "inscrev" is not in the action-verb list (raw model: 2/3) |
+| H06 "Fluência Garantida em 6 Meses" (expects A03) | 2/3 | Run 1: extra A01 on "Nivelamento Gratuito", which the LP states; "gratuit" is not among the LP-backed offer roots |
+
+The 48/48 on the main suite therefore measures the pipeline on the cases it was tuned on. Expectations of the held-out cases are not edited after these results; fixing the word lists would require a new held-out set to measure again.

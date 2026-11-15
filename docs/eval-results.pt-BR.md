@@ -57,3 +57,25 @@ Os vetos do código exigem um item localizado; issue sem localização é mantid
 ## Outro modelo testado
 
 `deepseek/deepseek-v4-flash` (US$ 0,0044 por execução completa, segundo o Promptfoo): pipeline 5/16 antes das mudanças do A02 e do A03 (execução [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). Ele registrava regras aprovadas como issues; não foi medido de novo no código atual.
+
+## Suíte held-out (10 casos nunca usados para ajustar)
+
+- **Código:** casos congelados no commit `14fe118` antes de qualquer execução real · `evals/holdout.py`, `evals/promptfooconfig.holdout.yaml`
+- **Setores:** fisioterapia (EN) e curso de inglês (PT), diferentes dos casos odontológicos acima
+- **Execuções:** [43726575538](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726575538), [43726584348](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726584348), [43726593006](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726593006) · `google/gemini-2.5-flash`
+
+| Coluna | Rodada 1 | Rodada 2 | Rodada 3 | Total |
+|---|---|---|---|---|
+| 1. LLM cru | 7/10 | 9/10 | 8/10 | 24/30 (80,0%) |
+| **2. Pipeline de produção** | **7/10** | **8/10** | **8/10** | **23/30 (76,7%)** |
+| 3. Prompt degradado | 5/10 | 5/10 | 6/10 | 16/30 (53,3%) |
+
+**Nos casos inéditos o pipeline ficou abaixo do modelo cru.** Os vetos do código foram desenhados nos casos odontológicos, e as listas de palavras não generalizam:
+
+| Caso | Pipeline | Causa |
+|---|---|---|
+| H05 "Walk Pain-Free After 1 Visit" (espera A03) | 0/3 | O modelo aponta A03; o veto do A03 descarta porque "pain-free" não está na lista de promessa absoluta |
+| H09 "Inscreva-se já" (espera nenhum problema) | 0/3 | O A02 decidido por código dispara porque "inscrev" não está na lista de verbos de ação (modelo cru: 2/3) |
+| H06 "Fluência Garantida em 6 Meses" (espera A03) | 2/3 | Rodada 1: A01 a mais em "Nivelamento Gratuito", que está na LP; "gratuit" não está entre as raízes de oferta conferidas na LP |
+
+Portanto, o 48/48 da suíte principal mede o pipeline nos casos em que ele foi ajustado. As expectativas dos casos held-out não são editadas depois destes resultados; corrigir as listas exigiria um novo conjunto held-out para medir de novo.
