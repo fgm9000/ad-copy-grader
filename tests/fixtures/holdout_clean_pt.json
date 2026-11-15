@@ -1,0 +1,31 @@
+{
+  "headlines": [
+    "Curso de Inglês Online",
+    "Curso de Inglês para Adultos",
+    "Curso de Inglês com Nativos",
+    "Aulas ao Vivo em Grupo",
+    "Professores Certificados",
+    "Turmas Noturnas",
+    "Material Didático Incluso",
+    "Conversação desde o Início",
+    "Plataforma Fácil de Usar",
+    "Certificado de Conclusão",
+    "Horários Flexíveis",
+    "Nivelamento Gratuito",
+    "Aprenda no Seu Ritmo",
+    "Inglês para o Trabalho",
+    "Agende uma Aula Experimental"
+  ],
+  "descriptions": [
+    "Curso de inglês online com aulas ao vivo e professores certificados. Agende sua aula.",
+    "Turmas noturnas e horários flexíveis para quem trabalha. Material didático incluso.",
+    "Teste de nivelamento gratuito para começar no nível certo. Fale com nossa equipe.",
+    "Conversação desde o início e certificado de conclusão ao final de cada módulo."
+  ],
+  "path1": "ingles",
+  "path2": "online",
+  "final_url": "https://exemplo-escola.com.br/curso-ingles",
+  "primary_service": "Curso de Inglês",
+  "lp_context": "A Escola Exemplo oferece curso de inglês online com aulas ao vivo em grupo, professores nativos e certificados, turmas noturnas, horários flexíveis e material didático incluso. Teste de nivelamento gratuito e aula experimental. Certificado de conclusão ao final de cada módulo. Agende pelo site.",
+  "lang": "pt"
+}

@@ -8,6 +8,14 @@ on:
         required: false
         default: "google/gemini-2.5-flash"
         type: string
+      suite:
+        description: "main = 16 tuning cases; holdout = 10 cases never used for tuning"
+        required: false
+        default: "main"
+        type: choice
+        options:
+          - main
+          - holdout
 
 jobs:
   eval-live:
@@ -20,10 +28,11 @@ jobs:
           node-version: "20"
       - run: uv sync --frozen
       - name: Run Live Promptfoo Evaluation
-        run: uv run npx --yes promptfoo@0.109.0 eval -c evals/promptfooconfig.yaml --no-cache --no-write -o promptfoo-live-results.json
+        run: uv run npx --yes promptfoo@0.109.0 eval -c "evals/${EVAL_CONFIG}" --no-cache --no-write -o promptfoo-live-results.json
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           LLM_MODEL: ${{ inputs.model || 'google/gemini-2.5-flash' }}
+          EVAL_CONFIG: ${{ inputs.suite == 'holdout' && 'promptfooconfig.holdout.yaml' || 'promptfooconfig.yaml' }}
       - name: Upload Evaluation Results Artifact
         if: always()
         uses: actions/upload-artifact@v4

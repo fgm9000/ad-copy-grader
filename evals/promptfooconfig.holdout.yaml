@@ -1,0 +1,26 @@
+description: "Ad Copy Grader - Held-out suite (10 cases, never used for tuning), 3 columns"
+
+prompts:
+  - "Case: {{name}}"
+
+providers:
+  - id: file://provider.py
+    label: "1. Raw LLM (Before Code Filters)"
+    config:
+      mode: raw
+  - id: file://provider.py
+    label: "2. Production Hybrid Pipeline (Code + LLM + Filters)"
+    config:
+      mode: pipeline
+  - id: file://provider.py
+    label: "3. Degraded Prompt (Without Code-Authority Guardrail)"
+    config:
+      mode: degraded
+
+tests: file://holdout.py:get_tests
+
+evaluateOptions:
+  maxConcurrency: 1
+
+commandLineOptions:
+  write: false
