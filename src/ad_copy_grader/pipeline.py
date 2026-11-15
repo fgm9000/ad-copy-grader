@@ -148,6 +148,22 @@ def _is_a01_supported_by_lp_context(ad: AdInput, issue: Issue) -> bool:
     return bool(matched_roots and any(root in lp_norm for root in matched_roots))
 
 
+# A01 needs a price, a percentage or a concrete offer; without any of these signals in the
+# flagged asset the LLM claim cannot be an A01 violation.
+OFFER_SIGNAL_PATTERN = re.compile(
+    r"[0-9%]|\b(financ|parcel|payment|pagament|free|gratis|gratuit|descont|discount"
+    r"|off\b|promo|ofert|offer|cupo|coupon|condic|facilitad|sale\b|liquida)"
+)
+
+
+def _a01_asset_lacks_offer_signal(ad: AdInput, issue: Issue) -> bool:
+    """Return True when the located asset has no price, percentage or offer wording."""
+    if issue.location is None:
+        return False
+    asset_text = _referenced_ad_text(ad, issue)
+    return bool(asset_text) and not OFFER_SIGNAL_PATTERN.search(_normalize_text(asset_text))
+
+
 CTA_ACTION_PATTERN = re.compile(
     r"\b(book|schedul|call|contact|request|learn more|visit"
     r"|agend|marqu|ligue|fale|solicit|saiba mais)"
@@ -168,7 +184,9 @@ def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
             continue
         if not _is_location_in_bounds(ad, issue):
             continue
-        if rule_id == "A01" and _is_a01_supported_by_lp_context(ad, issue):
+        if rule_id == "A01" and (
+            _a01_asset_lacks_offer_signal(ad, issue) or _is_a01_supported_by_lp_context(ad, issue)
+        ):
             continue
         if rule_id == "A02" and _has_cta_in_descriptions(ad):
             continue

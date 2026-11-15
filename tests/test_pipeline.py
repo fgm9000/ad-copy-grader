@@ -565,3 +565,33 @@ def test_filter_drops_a01_for_financing_offer_stated_in_lp(clean_ad_en: AdInput)
     )
     kept = filter_llm_issues(no_financing_lp, [issue])
     assert [i.rule_id for i in kept] == ["A01"]
+
+
+def test_filter_drops_a01_on_asset_without_price_or_offer(clean_ad_en: AdInput) -> None:
+    """A01 needs a price, % or offer: 'Same Day Consultations' has none, so code vetoes it."""
+    no_signal = Issue(
+        rule_id="A01",
+        severity="error",
+        message="Price claim not verified by the landing page.",
+        location=Location(field="headline", index=11),
+        source="llm",
+    )
+    assert clean_ad_en.headlines[11] == "Same Day Consultations"
+    assert filter_llm_issues(clean_ad_en, [no_signal]) == []
+
+
+def test_filter_keeps_a01_with_offer_signal_or_without_location(clean_ad_en: AdInput) -> None:
+    """A real unverified price survives; an A01 without location is left to the LP check."""
+    priced = clean_ad_en.model_copy(
+        update={"headlines": [*clean_ad_en.headlines[:10], "Implants Only $499 Today"]}
+    )
+    with_price = Issue(
+        rule_id="A01",
+        severity="error",
+        message="Unverified price.",
+        location=Location(field="headline", index=10),
+        source="llm",
+    )
+    no_location = with_price.model_copy(update={"location": None, "message": "Price $499."})
+    kept = filter_llm_issues(priced, [with_price, no_location])
+    assert [i.rule_id for i in kept] == ["A01", "A01"]
