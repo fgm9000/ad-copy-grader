@@ -1,0 +1,31 @@
+{
+  "headlines": [
+    "Academia no Centro",
+    "Academia com Personal",
+    "Academia Aberta 24 Horas",
+    "Aulas de Spinning e Yoga",
+    "Avaliação Física Inicial",
+    "Equipamentos Novos",
+    "Estacionamento no Local",
+    "Planos Mensais e Anuais",
+    "Treino para Iniciantes",
+    "Professores Formados",
+    "Ambiente Climatizado",
+    "Área de Musculação Ampla",
+    "Aulas Coletivas Diárias",
+    "Acompanhamento de Treino",
+    "Venha Conhecer a Academia"
+  ],
+  "descriptions": [
+    "Academia no centro com musculação, spinning e yoga. Venha fazer uma aula experimental.",
+    "Avaliação física inicial e acompanhamento de treino com professores formados.",
+    "Aberta 24 horas, ambiente climatizado e estacionamento no local para alunos.",
+    "Planos mensais e anuais para todos os objetivos. Chame no WhatsApp e tire dúvidas."
+  ],
+  "path1": "academia",
+  "path2": "centro",
+  "final_url": "https://exemplo-academia.com.br/planos",
+  "primary_service": "Academia",
+  "lp_context": "A Academia Exemplo fica no centro e funciona 24 horas, com musculação, spinning, yoga e aulas coletivas diárias. Personal trainer, avaliação física inicial, acompanhamento de treino e professores formados. Treino para iniciantes. Ambiente climatizado, equipamentos novos, área de musculação ampla e estacionamento no local. Planos mensais e anuais. Aula experimental mediante agendamento pelo WhatsApp.",
+  "lang": "pt"
+}
