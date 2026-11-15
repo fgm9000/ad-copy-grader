@@ -16,11 +16,12 @@ from ad_copy_grader.llm import (
     FakeModelClient,
     LlmClientError,
     ModelClient,
+    ModelReply,
     OpenRouterClient,
 )
 from ad_copy_grader.models import AdInput, GradeResult
 from ad_copy_grader.parser import LlmOutputError
-from ad_copy_grader.pipeline import build_degraded_result, grade, grade_with_degradation
+from ad_copy_grader.pipeline import build_degraded_result, grade
 from ad_copy_grader.settings import Settings, get_settings
 
 logger = logging.getLogger("ad_copy_grader.api")
@@ -232,6 +233,7 @@ def log_grade_event(
     result: GradeResult,
     latency_ms: float,
     forwarded_hops: int,
+    usage: ModelReply | None = None,
 ) -> None:
     """Log structured event for ad grading completion without sensitive data."""
     payload = {
@@ -246,6 +248,11 @@ def log_grade_event(
         "degraded": result.degraded_reason is not None,
         "latency_ms": round(latency_ms, 2),
         "forwarded_hops": forwarded_hops,
+        # LLM usage (None when degraded): tokens and cost as reported by the provider.
+        "llm_model": usage.model if usage else None,
+        "llm_prompt_tokens": usage.prompt_tokens if usage else None,
+        "llm_completion_tokens": usage.completion_tokens if usage else None,
+        "llm_cost_usd": usage.cost_usd if usage else None,
     }
     logger.info(json.dumps(payload))
 
@@ -334,27 +341,27 @@ def create_app(
             )
 
         start_time = time.perf_counter()
-        if strict_llm:
-            try:
-                pipeline_result = await grade(ad, client)
-                result = pipeline_result.final
-            except (LlmClientError, LlmOutputError):
-                fallback = build_degraded_result(ad)
-                latency_ms = (time.perf_counter() - start_time) * 1000.0
-                log_grade_event(ad, fallback, latency_ms, forwarded_hops)
-                return JSONResponse(
-                    status_code=502,
-                    content={
-                        "detail": fallback.degraded_reason,
-                        "partial_result": fallback.model_dump(mode="json"),
-                    },
-                )
-        else:
-            result = await grade_with_degradation(ad, client)
+        try:
+            pipeline_result = await grade(ad, client)
+        except (LlmClientError, LlmOutputError):
+            fallback = build_degraded_result(ad)
+            latency_ms = (time.perf_counter() - start_time) * 1000.0
+            log_grade_event(ad, fallback, latency_ms, forwarded_hops)
+            if not strict_llm:
+                return fallback
+            return JSONResponse(
+                status_code=502,
+                content={
+                    "detail": fallback.degraded_reason,
+                    "partial_result": fallback.model_dump(mode="json"),
+                },
+            )
 
         latency_ms = (time.perf_counter() - start_time) * 1000.0
-        log_grade_event(ad, result, latency_ms, forwarded_hops)
-        return result
+        log_grade_event(
+            ad, pipeline_result.final, latency_ms, forwarded_hops, pipeline_result.usage
+        )
+        return pipeline_result.final
 
     return app
 
