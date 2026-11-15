@@ -546,3 +546,22 @@ def test_filter_keeps_a02_when_no_description_has_a_cta(clean_ad_en: AdInput) ->
     )
     kept = filter_llm_issues(no_cta, [_a02_issue()])
     assert [issue.rule_id for issue in kept] == ["A02"]
+
+
+def test_filter_drops_a01_for_financing_offer_stated_in_lp(clean_ad_en: AdInput) -> None:
+    """A non-numeric financing offer is supported when the LP states financing too."""
+    issue = Issue(
+        rule_id="A01",
+        severity="error",
+        message="Concrete financing claim is not supported by the landing page.",
+        location=Location(field="headline", index=8),
+        source="llm",
+    )
+    assert clean_ad_en.headlines[8] == "Flexible Financing Available"
+    assert filter_llm_issues(clean_ad_en, [issue]) == []
+
+    no_financing_lp = clean_ad_en.model_copy(
+        update={"lp_context": "Titanium dental implants. Book your evaluation today."}
+    )
+    kept = filter_llm_issues(no_financing_lp, [issue])
+    assert [i.rule_id for i in kept] == ["A01"]

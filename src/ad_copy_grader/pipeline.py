@@ -38,6 +38,16 @@ GENERIC_CTA_ROOTS: tuple[str, ...] = (
     "conosco",
 )
 
+# Non-numeric offers (financing, payment terms) are supported when the same root is in the LP.
+OFFER_ROOTS: tuple[str, ...] = (
+    "financ",
+    "payment",
+    "pagament",
+    "parcel",
+    "condic",
+    "facilitad",
+)
+
 DEGRADED_MESSAGES: dict[Language, str] = {
     "en": (
         "Semantic LLM review was unavailable; returning deterministic code audit only (D01-D11)."
@@ -131,9 +141,10 @@ def _is_a01_supported_by_lp_context(ad: AdInput, issue: Issue) -> bool:
     if candidate_numbers:
         return all(num in lp_numbers or num in lp_norm for num in candidate_numbers)
 
-    # If no numbers exist in the flagged asset, check if it's a generic CTA supported by LP
+    # No numbers in the flagged asset: supported if it is a generic CTA or a non-numeric
+    # offer (financing, payment terms) whose root also appears in the LP.
     asset_norm = _normalize_text(asset_text or issue.message)
-    matched_roots = [root for root in GENERIC_CTA_ROOTS if root in asset_norm]
+    matched_roots = [root for root in GENERIC_CTA_ROOTS + OFFER_ROOTS if root in asset_norm]
     return bool(matched_roots and any(root in lp_norm for root in matched_roots))
 
 
