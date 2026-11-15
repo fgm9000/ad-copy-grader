@@ -25,6 +25,7 @@ class Issue(BaseModel):
     message: str
     location: Location | None = None
     source: IssueSource
+    evidence: str | None = None
 
 
 class Suggestion(BaseModel):

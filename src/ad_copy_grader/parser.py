@@ -25,6 +25,7 @@ class LlmIssueItem(BaseModel):
     severity: Severity
     message: str
     location: Location | None = None
+    evidence: str | None = None
 
     def to_issue(self) -> Issue:
         """Convert LLM issue item into a domain Issue tagged with source='llm'."""
@@ -34,6 +35,7 @@ class LlmIssueItem(BaseModel):
             message=self.message,
             location=self.location,
             source="llm",
+            evidence=self.evidence,
         )
 
 
