@@ -103,6 +103,10 @@ class OpenRouterClient:
             "response_format": {"type": "json_object"},
             "max_tokens": max_tokens,
             "usage": {"include": True},
+            # Thinking models (Gemini 2.5 Flash, DeepSeek V4) otherwise spend the output budget
+            # on billed reasoning tokens and can return an empty answer. The task is
+            # classification against explicit rules, so plain JSON output is enough.
+            "reasoning": {"enabled": False},
         }
 
         try:
@@ -141,7 +145,10 @@ class OpenRouterClient:
         message_obj = first_choice.get("message")
         content = message_obj.get("content") if isinstance(message_obj, dict) else None
         if not isinstance(content, str) or not content.strip():
-            raise LlmClientError("OpenRouter returned empty message content.")
+            finish_reason = first_choice.get("finish_reason")
+            raise LlmClientError(
+                f"OpenRouter returned empty message content (finish_reason={finish_reason})."
+            )
 
         usage = data.get("usage") if isinstance(data.get("usage"), dict) else {}
         prompt_tokens = int(usage.get("prompt_tokens", 0) or 0)
