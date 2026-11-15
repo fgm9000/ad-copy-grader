@@ -9,13 +9,14 @@ on:
         default: "google/gemini-2.5-flash"
         type: string
       suite:
-        description: "main = 16 tuning cases; holdout = 10 cases never used for tuning"
+        description: "main = 16 tuning cases; holdout = v1 (seen during the veto diagnosis); holdout_v2 = frozen before the evidence redesign"
         required: false
         default: "main"
         type: choice
         options:
           - main
           - holdout
+          - holdout_v2
 
 jobs:
   eval-live:
@@ -32,7 +33,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           LLM_MODEL: ${{ inputs.model || 'google/gemini-2.5-flash' }}
-          EVAL_CONFIG: ${{ inputs.suite == 'holdout' && 'promptfooconfig.holdout.yaml' || 'promptfooconfig.yaml' }}
+          EVAL_CONFIG: ${{ inputs.suite == 'holdout' && 'promptfooconfig.holdout.yaml' || inputs.suite == 'holdout_v2' && 'promptfooconfig.holdout2.yaml' || 'promptfooconfig.yaml' }}
       - name: Upload Evaluation Results Artifact
         if: always()
         uses: actions/upload-artifact@v4
