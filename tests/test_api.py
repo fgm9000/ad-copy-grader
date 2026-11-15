@@ -348,6 +348,10 @@ def test_structured_logging_output(
     assert isinstance(log_event["latency_ms"], float)
     assert log_event["latency_ms"] >= 0.0
     assert log_event["forwarded_hops"] == 2
+    assert log_event["llm_model"] == "fake-model"
+    assert isinstance(log_event["llm_prompt_tokens"], int)
+    assert isinstance(log_event["llm_completion_tokens"], int)
+    assert isinstance(log_event["llm_cost_usd"], float)
     assert "198.51.100.7" not in json.dumps(log_event)
 
     # Ensure sensitive ad copy text is NEVER in any log message
