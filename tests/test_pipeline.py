@@ -9,12 +9,15 @@ import pytest
 from ad_copy_grader.llm import FakeModelClient, LlmClientError, ModelReply
 from ad_copy_grader.models import AdInput, Issue, Location
 from ad_copy_grader.pipeline import (
+    A02_MESSAGES,
     DEGRADED_MESSAGES,
     _extract_normalized_numbers,
     _is_a01_supported_by_lp_context,
     _is_location_in_bounds,
     _normalize_text,
     _referenced_ad_text,
+    build_degraded_result,
+    check_a02,
     compute_score,
     filter_llm_issues,
     grade,
@@ -475,6 +478,7 @@ async def test_grade_with_degradation_llm_client_error(
         "D09",
         "D10",
         "D11",
+        "A02",
     ]
     assert result_en.score == 100
 
@@ -534,9 +538,8 @@ def test_filter_drops_a02_when_a_description_has_a_cta(clean_ad_pt: AdInput) -> 
     assert filter_llm_issues(clean_ad_pt, [_a02_issue()]) == []
 
 
-def test_filter_keeps_a02_when_no_description_has_a_cta(clean_ad_en: AdInput) -> None:
-    """A02 survives when no description contains an action verb (word-boundary match)."""
-    no_cta = clean_ad_en.model_copy(
+def _without_cta(ad: AdInput) -> AdInput:
+    return ad.model_copy(
         update={
             "descriptions": [
                 "Titanium dental implants with 3D digital planning.",
@@ -544,8 +547,29 @@ def test_filter_keeps_a02_when_no_description_has_a_cta(clean_ad_en: AdInput) ->
             ]
         }
     )
-    kept = filter_llm_issues(no_cta, [_a02_issue()])
-    assert [issue.rule_id for issue in kept] == ["A02"]
+
+
+def test_filter_always_drops_llm_a02(clean_ad_en: AdInput) -> None:
+    """A02 is decided by code, so LLM A02 claims are dropped even when no CTA exists."""
+    assert filter_llm_issues(_without_cta(clean_ad_en), [_a02_issue()]) == []
+
+
+def test_check_a02_flags_only_ads_without_cta(clean_ad_en: AdInput, clean_ad_pt: AdInput) -> None:
+    """'Recall' does not match 'call' (word boundary); a PT ad with 'Agende' passes."""
+    assert check_a02(clean_ad_en) == []
+    assert check_a02(clean_ad_pt) == []
+
+    issues = check_a02(_without_cta(clean_ad_en))
+    assert [(i.rule_id, i.severity, i.source) for i in issues] == [("A02", "warning", "code")]
+    assert issues[0].message == A02_MESSAGES["en"]
+    assert issues[0].location == Location(field="description", index=0)
+
+
+def test_degraded_result_still_applies_code_a02(clean_ad_en: AdInput) -> None:
+    """Without the LLM, A02 is still enforced because it no longer depends on the model."""
+    result = build_degraded_result(_without_cta(clean_ad_en))
+    assert [i.rule_id for i in result.issues] == ["A02"]
+    assert result.score == 95
 
 
 def test_filter_drops_a01_for_financing_offer_stated_in_lp(clean_ad_en: AdInput) -> None:
