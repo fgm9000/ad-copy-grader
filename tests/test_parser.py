@@ -358,6 +358,9 @@ async def test_openrouter_client_200_ok_with_telemetry() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.headers["Authorization"] == "Bearer test-key"
         assert request.headers["HTTP-Referer"] == "https://github.com/fgm9000/ad-copy-grader"
+        sent = json.loads(request.content)
+        assert sent["reasoning"] == {"enabled": False}
+        assert sent["response_format"] == {"type": "json_object"}
         return httpx.Response(200, json=payload)
 
     transport = httpx.MockTransport(handler)
@@ -419,11 +422,13 @@ async def test_openrouter_client_empty_choices_error() -> None:
 async def test_openrouter_client_empty_content_error() -> None:
     """Raise LlmClientError when message content is empty string."""
     transport = httpx.MockTransport(
-        lambda req: httpx.Response(200, json={"choices": [{"message": {"content": "   "}}]})
+        lambda req: httpx.Response(
+            200, json={"choices": [{"message": {"content": "   "}, "finish_reason": "length"}]}
+        )
     )
     async with httpx.AsyncClient(transport=transport) as http_client:
         client = OpenRouterClient(api_key="key", http_client=http_client)
-        with pytest.raises(LlmClientError, match="empty message content"):
+        with pytest.raises(LlmClientError, match=r"empty message content \(finish_reason=length\)"):
             await client.complete_json([{"role": "user", "content": "test"}])
 
 

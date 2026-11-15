@@ -25,6 +25,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           LLM_MODEL: ${{ inputs.model || 'google/gemini-2.5-flash' }}
       - name: Upload Evaluation Results Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: promptfoo-live-results
