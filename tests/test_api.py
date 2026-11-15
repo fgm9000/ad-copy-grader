@@ -352,6 +352,7 @@ def test_structured_logging_output(
     assert isinstance(log_event["llm_prompt_tokens"], int)
     assert isinstance(log_event["llm_completion_tokens"], int)
     assert isinstance(log_event["llm_cost_usd"], float)
+    assert isinstance(log_event["llm_upstream_cost_usd"], float)
     assert "198.51.100.7" not in json.dumps(log_event)
 
     # Ensure sensitive ad copy text is NEVER in any log message

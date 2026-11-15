@@ -352,6 +352,7 @@ async def test_openrouter_client_200_ok_with_telemetry() -> None:
             "completion_tokens": 45,
             "total_tokens": 165,
             "cost": 0.00042,
+            "cost_details": {"upstream_inference_cost": 0.00081},
         },
     }
 
@@ -361,6 +362,7 @@ async def test_openrouter_client_200_ok_with_telemetry() -> None:
         sent = json.loads(request.content)
         assert sent["reasoning"] == {"enabled": False}
         assert sent["response_format"] == {"type": "json_object"}
+        assert "usage" not in sent  # deprecated by OpenRouter; usage is always returned
         return httpx.Response(200, json=payload)
 
     transport = httpx.MockTransport(handler)
@@ -370,6 +372,7 @@ async def test_openrouter_client_200_ok_with_telemetry() -> None:
         reply = await client.complete_json([{"role": "user", "content": "hi"}])
 
     assert reply.prompt_tokens == 120
+    assert reply.upstream_cost_usd == 0.00081
     assert reply.completion_tokens == 45
     assert reply.total_tokens == 165
     assert reply.cost_usd == 0.00042

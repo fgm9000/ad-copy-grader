@@ -42,6 +42,9 @@ class ModelReply(BaseModel):
     completion_tokens: int = 0
     total_tokens: int = 0
     cost_usd: float = 0.0
+    # BYOK requests: OpenRouter's own charge (`cost`) is ~0 and the provider bills the
+    # inference directly; OpenRouter reports that amount as upstream_inference_cost.
+    upstream_cost_usd: float = 0.0
     model: str = "fake-model"
 
 
@@ -102,7 +105,6 @@ class OpenRouterClient:
             "messages": messages,
             "response_format": {"type": "json_object"},
             "max_tokens": max_tokens,
-            "usage": {"include": True},
             # Thinking models (Gemini 2.5 Flash, DeepSeek V4) otherwise spend the output budget
             # on billed reasoning tokens and can return an empty answer. The task is
             # classification against explicit rules, so plain JSON output is enough.
@@ -155,6 +157,10 @@ class OpenRouterClient:
         completion_tokens = int(usage.get("completion_tokens", 0) or 0)
         total_tokens = int(usage.get("total_tokens", prompt_tokens + completion_tokens) or 0)
         cost_usd = float(usage.get("cost", 0.0) or 0.0)
+        raw_details = usage.get("cost_details")
+        details: dict[str, object] = raw_details if isinstance(raw_details, dict) else {}
+        upstream_raw = details.get("upstream_inference_cost")
+        upstream_cost_usd = float(upstream_raw) if isinstance(upstream_raw, (int, float)) else 0.0
         resolved_model = str(data.get("model") or self._model)
 
         return ModelReply(
@@ -163,6 +169,7 @@ class OpenRouterClient:
             completion_tokens=completion_tokens,
             total_tokens=total_tokens,
             cost_usd=cost_usd,
+            upstream_cost_usd=upstream_cost_usd,
             model=resolved_model,
         )
 
