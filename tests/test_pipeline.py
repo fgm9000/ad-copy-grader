@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import pytest
 
@@ -436,7 +436,7 @@ def test_filter_llm_issues_unknown_rule_and_normalization(clean_ad_en: AdInput) 
             rule_id="a03",
             severity="warning",
             message="Absolute guarantee.",
-            location=Location(field="headline", index=0),
+            location=None,
             source="llm",
         ),
     ]
@@ -619,3 +619,29 @@ def test_filter_keeps_a01_with_offer_signal_or_without_location(clean_ad_en: AdI
     no_location = with_price.model_copy(update={"location": None, "message": "Price $499."})
     kept = filter_llm_issues(priced, [with_price, no_location])
     assert [i.rule_id for i in kept] == ["A01", "A01"]
+
+
+def _a03_on(field: Literal["headline", "description"], index: int) -> Issue:
+    return Issue(
+        rule_id="A03",
+        severity="warning",
+        message="Absolute outcome promise.",
+        location=Location(field=field, index=index),
+        source="llm",
+    )
+
+
+def test_filter_drops_a03_on_soft_benefit_phrases(clean_ad_pt: AdInput) -> None:
+    """'Recupere Seu Sorriso' has no absolute-promise wording, so code vetoes the A03 claim."""
+    assert clean_ad_pt.headlines[5] == "Recupere Seu Sorriso"
+    assert filter_llm_issues(clean_ad_pt, [_a03_on("headline", 5)]) == []
+
+
+def test_filter_keeps_a03_with_absolute_promise_or_without_location(clean_ad_pt: AdInput) -> None:
+    """A real guarantee survives; an A03 without location cannot be checked and is kept."""
+    guaranteed = clean_ad_pt.model_copy(
+        update={"headlines": [*clean_ad_pt.headlines[:10], "Implante 100% Garantido"]}
+    )
+    no_location = _a03_on("headline", 10).model_copy(update={"location": None})
+    kept = filter_llm_issues(guaranteed, [_a03_on("headline", 10), no_location])
+    assert [i.rule_id for i in kept] == ["A03", "A03"]

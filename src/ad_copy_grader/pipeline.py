@@ -156,6 +156,23 @@ OFFER_SIGNAL_PATTERN = re.compile(
 )
 
 
+# A03 needs an absolute promise (guarantee, 100%, cure, painless, instant, permanent, zero
+# risk). Without any of these words in the flagged asset the LLM claim cannot be A03.
+ABSOLUTE_PROMISE_PATTERN = re.compile(
+    r"100 ?%|\b(garant|guarant|cura\b|curam\b|cure\b|cures\b|cured\b|sem dor|painless"
+    r"|indolor|imediat|instant|permanent|definitiv|risco zero|zero risk|sem risco|risk.free"
+    r"|no risk|certeza|certain)"
+)
+
+
+def _a03_asset_lacks_absolute_signal(ad: AdInput, issue: Issue) -> bool:
+    """Return True when the located asset has no absolute-promise wording."""
+    if issue.location is None:
+        return False
+    asset_text = _referenced_ad_text(ad, issue)
+    return bool(asset_text) and not ABSOLUTE_PROMISE_PATTERN.search(_normalize_text(asset_text))
+
+
 def _a01_asset_lacks_offer_signal(ad: AdInput, issue: Issue) -> bool:
     """Return True when the located asset has no price, percentage or offer wording."""
     if issue.location is None:
@@ -214,6 +231,8 @@ def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
         ):
             continue
         if rule_id == "A02":
+            continue
+        if rule_id == "A03" and _a03_asset_lacks_absolute_signal(ad, issue):
             continue
         filtered.append(issue.model_copy(update={"rule_id": rule_id, "source": "llm"}))
     return filtered
