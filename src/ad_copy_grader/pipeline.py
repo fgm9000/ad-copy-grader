@@ -9,7 +9,7 @@ import unicodedata
 from pydantic import BaseModel
 
 from ad_copy_grader.llm import ChatMessage, LlmClientError, ModelClient, ModelReply
-from ad_copy_grader.models import AdInput, GradeResult, Issue, Language, Location
+from ad_copy_grader.models import AdInput, GradeResult, Issue, Language
 from ad_copy_grader.parser import LlmOutputError, request_and_parse_review
 from ad_copy_grader.prompt import (
     SEMANTIC_RULE_IDS,
@@ -22,30 +22,6 @@ from ad_copy_grader.rules import DETERMINISTIC_RULE_IDS, run_rules
 NUMERIC_TOKEN_PATTERN = re.compile(
     r"(?:r\$\s*[\d.,]+|\$\s*[\d.,]+|\b\d+(?:[.,]\d+)?%|\b\d{1,2}x\b|\b\d{2,6}\b)",
     re.IGNORECASE,
-)
-
-GENERIC_CTA_ROOTS: tuple[str, ...] = (
-    "book",
-    "schedul",
-    "consult",
-    "evaluat",
-    "appoint",
-    "contact",
-    "agend",
-    "avaliac",
-    "marqu",
-    "orcament",
-    "conosco",
-)
-
-# Non-numeric offers (financing, payment terms) are supported when the same root is in the LP.
-OFFER_ROOTS: tuple[str, ...] = (
-    "financ",
-    "payment",
-    "pagament",
-    "parcel",
-    "condic",
-    "facilitad",
 )
 
 DEGRADED_MESSAGES: dict[Language, str] = {
@@ -133,92 +109,57 @@ def _is_a01_supported_by_lp_context(ad: AdInput, issue: Issue) -> bool:
     lp_norm = _normalize_text(ad.lp_context)
     lp_numbers = set(_extract_normalized_numbers(ad.lp_context))
 
-    asset_text = _referenced_ad_text(ad, issue)
-    candidate_numbers = _extract_normalized_numbers(asset_text)
+    candidate_numbers = _extract_normalized_numbers(issue.evidence or "")
+    if not candidate_numbers:
+        candidate_numbers = _extract_normalized_numbers(_referenced_ad_text(ad, issue))
     if not candidate_numbers:
         candidate_numbers = _extract_normalized_numbers(issue.message)
 
-    if candidate_numbers:
-        return all(num in lp_numbers or num in lp_norm for num in candidate_numbers)
-
-    # No numbers in the flagged asset: supported if it is a generic CTA or a non-numeric
-    # offer (financing, payment terms) whose root also appears in the LP.
-    asset_norm = _normalize_text(asset_text or issue.message)
-    matched_roots = [root for root in GENERIC_CTA_ROOTS + OFFER_ROOTS if root in asset_norm]
-    return bool(matched_roots and any(root in lp_norm for root in matched_roots))
+    # Only numbers are checked: whether a non-numeric phrase "is supported" by the LP is a
+    # semantic judgement, which stays with the model.
+    return bool(candidate_numbers) and all(
+        num in lp_numbers or num in lp_norm for num in candidate_numbers
+    )
 
 
-# A01 needs a price, a percentage or a concrete offer; without any of these signals in the
-# flagged asset the LLM claim cannot be an A01 violation.
-OFFER_SIGNAL_PATTERN = re.compile(
-    r"[0-9%]|\b(financ|parcel|payment|pagament|free|gratis|gratuit|descont|discount"
-    r"|off\b|promo|ofert|offer|cupo|coupon|condic|facilitad|sale\b|liquida)"
-)
+EVIDENCE_EXEMPT_RULES: frozenset[str] = frozenset({"A02"})
 
 
-# A03 needs an absolute promise (guarantee, 100%, cure, painless, instant, permanent, zero
-# risk). Without any of these words in the flagged asset the LLM claim cannot be A03.
-ABSOLUTE_PROMISE_PATTERN = re.compile(
-    r"100 ?%|\b(garant|guarant|cura\b|curam\b|cure\b|cures\b|cured\b|sem dor|painless"
-    r"|indolor|imediat|instant|permanent|definitiv|risco zero|zero risk|sem risco|risk.free"
-    r"|no risk|certeza|certain)"
-)
+def _match_key(text: str) -> str:
+    """Normalize text for verbatim matching: accents, case, quotes and whitespace."""
+    normalized = _normalize_text(unicodedata.normalize("NFC", text))
+    normalized = normalized.strip().strip("\"'“”‘’.,;:!?")
+    return " ".join(normalized.split())
 
 
-def _a03_asset_lacks_absolute_signal(ad: AdInput, issue: Issue) -> bool:
-    """Return True when the located asset has no absolute-promise wording."""
-    if issue.location is None:
-        return False
-    asset_text = _referenced_ad_text(ad, issue)
-    return bool(asset_text) and not ABSOLUTE_PROMISE_PATTERN.search(_normalize_text(asset_text))
+def _ad_texts(ad: AdInput) -> list[str]:
+    return [*ad.headlines, *ad.descriptions, ad.path1 or "", ad.path2 or ""]
 
 
-def _a01_asset_lacks_offer_signal(ad: AdInput, issue: Issue) -> bool:
-    """Return True when the located asset has no price, percentage or offer wording."""
-    if issue.location is None:
-        return False
-    asset_text = _referenced_ad_text(ad, issue)
-    return bool(asset_text) and not OFFER_SIGNAL_PATTERN.search(_normalize_text(asset_text))
+def _has_verbatim_evidence(ad: AdInput, issue: Issue, rule_id: str) -> bool:
+    """Code check of the LLM's quote: the evidence must be a substring of the flagged asset.
 
-
-CTA_ACTION_PATTERN = re.compile(
-    r"\b(book|schedul|call|contact|request|learn more|visit"
-    r"|agend|marqu|ligue|fale|solicit|saiba mais)"
-)
-
-
-def _has_cta_in_descriptions(ad: AdInput) -> bool:
-    """Return True if any description contains an action verb (code authority over A02)."""
-    return any(CTA_ACTION_PATTERN.search(_normalize_text(desc)) for desc in ad.descriptions)
-
-
-A02_MESSAGES: dict[Language, str] = {
-    "en": "No description contains a clear call-to-action (e.g., book, schedule, call).",
-    "pt": "Nenhuma descrição contém uma chamada para ação clara (ex.: agende, ligue, fale).",
-}
-
-
-def check_a02(ad: AdInput) -> list[Issue]:
-    """A02 is decided by code: flag when no description contains an action verb.
-
-    Live evals showed models both inventing and omitting A02 on the same ads, while the
-    check itself is a verb lookup that code does exactly. The rule ID stays A02.
+    The model judges whether a phrase violates the rule; code only verifies that the quoted
+    phrase really exists where the model says it does. A02 (missing CTA) is about an absence,
+    so there is nothing to quote and it is exempt.
     """
-    if _has_cta_in_descriptions(ad):
-        return []
-    return [
-        Issue(
-            rule_id="A02",
-            severity="warning",
-            message=A02_MESSAGES[ad.lang],
-            location=Location(field="description", index=0),
-            source="code",
-        )
-    ]
+    if rule_id in EVIDENCE_EXEMPT_RULES:
+        return True
+    evidence = _match_key(issue.evidence or "")
+    if not evidence:
+        return False
+    if issue.location is not None:
+        return evidence in _match_key(_referenced_ad_text(ad, issue))
+    return any(evidence in _match_key(text) for text in _ad_texts(ad))
 
 
 def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
-    """Apply server authority filters to LLM-generated issues."""
+    """Apply server authority filters to LLM-generated issues.
+
+    Every filter here is a verification, not a judgement: rule IDs against the contract,
+    locations against the ad, quoted evidence against the asset text, and quoted numbers
+    against the landing page.
+    """
     filtered: list[Issue] = []
     for issue in llm_issues:
         rule_id = issue.rule_id.strip().upper()
@@ -226,13 +167,9 @@ def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
             continue
         if not _is_location_in_bounds(ad, issue):
             continue
-        if rule_id == "A01" and (
-            _a01_asset_lacks_offer_signal(ad, issue) or _is_a01_supported_by_lp_context(ad, issue)
-        ):
+        if not _has_verbatim_evidence(ad, issue, rule_id):
             continue
-        if rule_id == "A02":
-            continue
-        if rule_id == "A03" and _a03_asset_lacks_absolute_signal(ad, issue):
+        if rule_id == "A01" and _is_a01_supported_by_lp_context(ad, issue):
             continue
         filtered.append(issue.model_copy(update={"rule_id": rule_id, "source": "llm"}))
     return filtered
@@ -282,7 +219,7 @@ async def grade(
     )
 
     filtered_llm_issues = filter_llm_issues(ad, raw_llm_issues)
-    merged_issues = [*deterministic_issues, *check_a02(ad), *filtered_llm_issues]
+    merged_issues = [*deterministic_issues, *filtered_llm_issues]
     valid_suggestions, discarded_count = validate_suggestions(ad, llm_review.suggestions)
     final_score, final_grade_10, final_passed = compute_score(merged_issues)
     all_rules_checked = [*DETERMINISTIC_RULE_IDS, *SEMANTIC_RULE_IDS]
@@ -304,7 +241,7 @@ async def grade(
 
 def build_degraded_result(ad: AdInput) -> GradeResult:
     """Build deterministic-only GradeResult when the semantic LLM review fails."""
-    code_issues = [*run_rules(ad), *check_a02(ad)]
+    code_issues = run_rules(ad)
     score, grade_10, passed = compute_score(code_issues)
     return GradeResult(
         score=score,
@@ -313,7 +250,7 @@ def build_degraded_result(ad: AdInput) -> GradeResult:
         issues=code_issues,
         suggestions=[],
         discarded_suggestions_count=0,
-        rules_checked=[*DETERMINISTIC_RULE_IDS, "A02"],
+        rules_checked=list(DETERMINISTIC_RULE_IDS),
         model=None,
         degraded_reason=DEGRADED_MESSAGES[ad.lang],
     )

@@ -2,22 +2,19 @@
 
 import json
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import pytest
 
 from ad_copy_grader.llm import FakeModelClient, LlmClientError, ModelReply
 from ad_copy_grader.models import AdInput, Issue, Location
 from ad_copy_grader.pipeline import (
-    A02_MESSAGES,
     DEGRADED_MESSAGES,
     _extract_normalized_numbers,
     _is_a01_supported_by_lp_context,
     _is_location_in_bounds,
     _normalize_text,
     _referenced_ad_text,
-    build_degraded_result,
-    check_a02,
     compute_score,
     filter_llm_issues,
     grade,
@@ -260,7 +257,7 @@ def test_is_a01_supported_by_lp_context_variations(clean_ad_en: AdInput) -> None
     # Price in issue message matches lp_context when asset has no numbers
     assert _is_a01_supported_by_lp_context(clean_ad_en, issue_price) is True
 
-    # Generic CTA when lp_context mentions consultation/evaluation
+    # Non-numeric claims are not judged by code (semantic): never 'supported' by the LP check
     issue_cta = Issue(
         rule_id="A01",
         severity="error",
@@ -268,7 +265,7 @@ def test_is_a01_supported_by_lp_context_variations(clean_ad_en: AdInput) -> None
         location=Location(field="headline", index=4),
         source="llm",
     )
-    assert _is_a01_supported_by_lp_context(clean_ad_en, issue_cta) is True
+    assert _is_a01_supported_by_lp_context(clean_ad_en, issue_cta) is False
 
     # Generic CTA when lp_context mentions unrelated topics only
     ad_unrelated_lp = clean_ad_en.model_copy(update={"lp_context": "Only selling toothbrushes."})
@@ -373,6 +370,7 @@ async def test_llm_emitting_a01_unverified_price_kept(clean_ad_en: AdInput) -> N
                 "severity": "error",
                 "message": "Price $499 is not mentioned in landing page context.",
                 "location": {"field": "headline", "index": 0},
+                "evidence": "$499",
             }
         ]
     )
@@ -384,23 +382,27 @@ async def test_llm_emitting_a01_unverified_price_kept(clean_ad_en: AdInput) -> N
 
 
 @pytest.mark.anyio
-async def test_llm_emitting_a01_generic_booking_cta_stripped(clean_ad_en: AdInput) -> None:
-    """A01 issue on generic booking CTA when lp_context has booking is stripped."""
+async def test_llm_a01_on_non_numeric_phrase_is_left_to_the_model(clean_ad_en: AdInput) -> None:
+    """Code no longer judges non-numeric A01 claims: with verbatim evidence the issue stays.
+
+    Deciding whether "Book Your 3D Scan Today" is an offer is semantic; word-list vetoes for
+    this failed on held-out cases, so the judgement is the model's and the trade-off is explicit.
+    """
     reply = _make_llm_reply(
         issues=[
             {
                 "rule_id": "A01",
                 "severity": "error",
-                "message": "Unverified consultation offer: Book your consultation today.",
+                "message": "Unverified scan offer.",
                 "location": {"field": "headline", "index": 4},
+                "evidence": "Book Your 3D Scan Today",
             }
         ]
     )
     result = await grade(clean_ad_en, FakeModelClient(responses=[reply]))
 
-    assert any(i.rule_id == "A01" for i in result.raw.issues)
-    assert not any(i.rule_id == "A01" for i in result.final.issues)
-    assert result.final.passed is True
+    assert [i.rule_id for i in result.final.issues] == ["A01"]
+    assert result.final.issues[0].evidence == "Book Your 3D Scan Today"
 
 
 @pytest.mark.anyio
@@ -438,6 +440,7 @@ def test_filter_llm_issues_unknown_rule_and_normalization(clean_ad_en: AdInput) 
             message="Absolute guarantee.",
             location=None,
             source="llm",
+            evidence="Long-Lasting",
         ),
     ]
     filtered = filter_llm_issues(clean_ad_en, raw_issues)
@@ -478,7 +481,6 @@ async def test_grade_with_degradation_llm_client_error(
         "D09",
         "D10",
         "D11",
-        "A02",
     ]
     assert result_en.score == 100
 
@@ -523,125 +525,54 @@ async def test_grade_with_degradation_success(clean_ad_en: AdInput) -> None:
     assert result.model == "fake-model"
 
 
-def _a02_issue() -> Issue:
+def _llm_issue(rule_id: str, evidence: str | None, location: Location | None = None) -> Issue:
     return Issue(
-        rule_id="A02",
-        severity="warning",
-        message="No clear call-to-action.",
-        location=Location(field="description", index=0),
+        rule_id=rule_id,
+        severity="warning" if rule_id != "A01" else "error",
+        message="Model claim.",
+        location=location,
         source="llm",
+        evidence=evidence,
     )
 
 
-def test_filter_drops_a02_when_a_description_has_a_cta(clean_ad_pt: AdInput) -> None:
-    """Code has authority over A02: 'Agende sua avaliação' is a CTA, so the LLM claim is dropped."""
-    assert filter_llm_issues(clean_ad_pt, [_a02_issue()]) == []
-
-
-def _without_cta(ad: AdInput) -> AdInput:
-    return ad.model_copy(
-        update={
-            "descriptions": [
-                "Titanium dental implants with 3D digital planning.",
-                "Recall programs and modern biocompatible implant materials.",
-            ]
-        }
-    )
-
-
-def test_filter_always_drops_llm_a02(clean_ad_en: AdInput) -> None:
-    """A02 is decided by code, so LLM A02 claims are dropped even when no CTA exists."""
-    assert filter_llm_issues(_without_cta(clean_ad_en), [_a02_issue()]) == []
-
-
-def test_check_a02_flags_only_ads_without_cta(clean_ad_en: AdInput, clean_ad_pt: AdInput) -> None:
-    """'Recall' does not match 'call' (word boundary); a PT ad with 'Agende' passes."""
-    assert check_a02(clean_ad_en) == []
-    assert check_a02(clean_ad_pt) == []
-
-    issues = check_a02(_without_cta(clean_ad_en))
-    assert [(i.rule_id, i.severity, i.source) for i in issues] == [("A02", "warning", "code")]
-    assert issues[0].message == A02_MESSAGES["en"]
-    assert issues[0].location == Location(field="description", index=0)
-
-
-def test_degraded_result_still_applies_code_a02(clean_ad_en: AdInput) -> None:
-    """Without the LLM, A02 is still enforced because it no longer depends on the model."""
-    result = build_degraded_result(_without_cta(clean_ad_en))
-    assert [i.rule_id for i in result.issues] == ["A02"]
-    assert result.score == 95
-
-
-def test_filter_drops_a01_for_financing_offer_stated_in_lp(clean_ad_en: AdInput) -> None:
-    """A non-numeric financing offer is supported when the LP states financing too."""
-    issue = Issue(
-        rule_id="A01",
-        severity="error",
-        message="Concrete financing claim is not supported by the landing page.",
-        location=Location(field="headline", index=8),
-        source="llm",
-    )
-    assert clean_ad_en.headlines[8] == "Flexible Financing Available"
-    assert filter_llm_issues(clean_ad_en, [issue]) == []
-
-    no_financing_lp = clean_ad_en.model_copy(
-        update={"lp_context": "Titanium dental implants. Book your evaluation today."}
-    )
-    kept = filter_llm_issues(no_financing_lp, [issue])
-    assert [i.rule_id for i in kept] == ["A01"]
-
-
-def test_filter_drops_a01_on_asset_without_price_or_offer(clean_ad_en: AdInput) -> None:
-    """A01 needs a price, % or offer: 'Same Day Consultations' has none, so code vetoes it."""
-    no_signal = Issue(
-        rule_id="A01",
-        severity="error",
-        message="Price claim not verified by the landing page.",
-        location=Location(field="headline", index=11),
-        source="llm",
-    )
-    assert clean_ad_en.headlines[11] == "Same Day Consultations"
-    assert filter_llm_issues(clean_ad_en, [no_signal]) == []
-
-
-def test_filter_keeps_a01_with_offer_signal_or_without_location(clean_ad_en: AdInput) -> None:
-    """A real unverified price survives; an A01 without location is left to the LP check."""
-    priced = clean_ad_en.model_copy(
-        update={"headlines": [*clean_ad_en.headlines[:10], "Implants Only $499 Today"]}
-    )
-    with_price = Issue(
-        rule_id="A01",
-        severity="error",
-        message="Unverified price.",
-        location=Location(field="headline", index=10),
-        source="llm",
-    )
-    no_location = with_price.model_copy(update={"location": None, "message": "Price $499."})
-    kept = filter_llm_issues(priced, [with_price, no_location])
-    assert [i.rule_id for i in kept] == ["A01", "A01"]
-
-
-def _a03_on(field: Literal["headline", "description"], index: int) -> Issue:
-    return Issue(
-        rule_id="A03",
-        severity="warning",
-        message="Absolute outcome promise.",
-        location=Location(field=field, index=index),
-        source="llm",
-    )
-
-
-def test_filter_drops_a03_on_soft_benefit_phrases(clean_ad_pt: AdInput) -> None:
-    """'Recupere Seu Sorriso' has no absolute-promise wording, so code vetoes the A03 claim."""
+def test_evidence_must_be_quoted_from_the_located_asset(clean_ad_pt: AdInput) -> None:
+    """A01/A03 survive only if the quoted evidence exists in the asset the model points to."""
+    at_5 = Location(field="headline", index=5)
     assert clean_ad_pt.headlines[5] == "Recupere Seu Sorriso"
-    assert filter_llm_issues(clean_ad_pt, [_a03_on("headline", 5)]) == []
+
+    kept = filter_llm_issues(clean_ad_pt, [_llm_issue("A03", "recupere seu sorriso", at_5)])
+    assert [i.rule_id for i in kept] == ["A03"]  # case/accents ignored; mérito é do modelo
+
+    assert filter_llm_issues(clean_ad_pt, [_llm_issue("A03", None, at_5)]) == []
+    assert filter_llm_issues(clean_ad_pt, [_llm_issue("A03", "   ", at_5)]) == []
+    wrong_place = _llm_issue("A03", "Recupere Seu Sorriso", Location(field="headline", index=0))
+    assert filter_llm_issues(clean_ad_pt, [wrong_place]) == []
+    invented = _llm_issue("A03", "100% garantido", at_5)
+    assert filter_llm_issues(clean_ad_pt, [invented]) == []
 
 
-def test_filter_keeps_a03_with_absolute_promise_or_without_location(clean_ad_pt: AdInput) -> None:
-    """A real guarantee survives; an A03 without location cannot be checked and is kept."""
-    guaranteed = clean_ad_pt.model_copy(
-        update={"headlines": [*clean_ad_pt.headlines[:10], "Implante 100% Garantido"]}
+def test_evidence_without_location_is_searched_in_all_assets(clean_ad_pt: AdInput) -> None:
+    """Without a location, the quote must appear in some headline, description or path."""
+    assert [i.rule_id for i in filter_llm_issues(clean_ad_pt, [_llm_issue("A03", '"Agende"')])] == [
+        "A03"
+    ]
+    assert filter_llm_issues(clean_ad_pt, [_llm_issue("A03", "frase que não existe")]) == []
+
+
+def test_a02_is_exempt_from_evidence(clean_ad_en: AdInput) -> None:
+    """A02 reports an absence (no CTA), so there is nothing to quote."""
+    a02 = _llm_issue("A02", None, Location(field="description", index=0))
+    assert [i.rule_id for i in filter_llm_issues(clean_ad_en, [a02])] == ["A02"]
+
+
+def test_a01_numbers_are_checked_from_the_quoted_evidence(clean_ad_en: AdInput) -> None:
+    """The LP check uses the numbers in the evidence: $899 is in the LP, $499 is not."""
+    ad = clean_ad_en.model_copy(
+        update={"headlines": [*clean_ad_en.headlines[:10], "From $899 or $499 Promo"]}
     )
-    no_location = _a03_on("headline", 10).model_copy(update={"location": None})
-    kept = filter_llm_issues(guaranteed, [_a03_on("headline", 10), no_location])
-    assert [i.rule_id for i in kept] == ["A03", "A03"]
+    at_10 = Location(field="headline", index=10)
+    assert filter_llm_issues(ad, [_llm_issue("A01", "From $899", at_10)]) == []
+    assert [i.rule_id for i in filter_llm_issues(ad, [_llm_issue("A01", "$499 Promo", at_10)])] == [
+        "A01"
+    ]

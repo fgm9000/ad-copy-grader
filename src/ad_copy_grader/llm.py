@@ -239,6 +239,7 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
                     "severity": "error",
                     "message": msg,
                     "location": {"field": "headline", "index": idx},
+                    "evidence": offer_str,
                 }
             )
             rewritten = (
@@ -272,6 +273,7 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
                     "severity": "error",
                     "message": msg,
                     "location": {"field": "description", "index": idx},
+                    "evidence": offer_str,
                 }
             )
 
@@ -310,7 +312,8 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
 
     # Check A03 (absolute outcome guarantee)
     for idx, headline in enumerate(headlines):
-        if GUARANTEE_PATTERN.search(headline):
+        guarantee_match = GUARANTEE_PATTERN.search(headline)
+        if guarantee_match:
             issues.append(
                 {
                     "rule_id": "A03",
@@ -321,6 +324,7 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
                         else "Absolute outcome guarantee or regulated promise in headline."
                     ),
                     "location": {"field": "headline", "index": idx},
+                    "evidence": guarantee_match.group(0),
                 }
             )
             suggestions.append(
@@ -341,7 +345,8 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
             )
 
     for idx, desc in enumerate(descriptions):
-        if GUARANTEE_PATTERN.search(desc):
+        desc_guarantee = GUARANTEE_PATTERN.search(desc)
+        if desc_guarantee:
             issues.append(
                 {
                     "rule_id": "A03",
@@ -352,6 +357,7 @@ def _default_fake_audit(messages: Sequence[ChatMessage]) -> str:
                         else "Absolute outcome guarantee or regulated promise in description."
                     ),
                     "location": {"field": "description", "index": idx},
+                    "evidence": desc_guarantee.group(0),
                 }
             )
 

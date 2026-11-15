@@ -40,6 +40,9 @@ Evaluate the submitted RSA payload against ALL three semantic rules below:
 - You must include all three rule IDs `["A01", "A02", "A03"]` in `rules_checked`.
 - Report ONLY violations in `issues`. A rule that passes goes only in `rules_checked`;
   never create an issue to say that no violation was found.
+- For A01 and A03, set `evidence` to the exact words copied verbatim from the flagged
+  asset (a substring of that headline or description). The server discards any issue whose
+  evidence is not found in the asset. For A02 set `evidence` to null.
 - Write all issue `message` and suggestion `reason` fields in English.
 - Whenever an ad asset violates A01, A02, or A03 (or is listed in
   `deterministic_issues_for_rewrite`), provide a compliant rewrite in `suggestions` that
@@ -54,6 +57,7 @@ Respond with a single valid JSON object matching this exact schema:
       "rule_id": "A01" | "A02" | "A03",
       "severity": "error" | "warning",
       "message": "Concise explanation in English",
+      "evidence": "Exact words copied from the flagged asset (null for A02)",
       "location": {{
         "field": "headline" | "description" | "path1" | "path2" | "final_url",
         "index": 0
@@ -99,6 +103,9 @@ Avalie o anúncio RSA submetido contra TODAS as três regras semânticas abaixo:
 - Você DEVE incluir os três códigos `["A01", "A02", "A03"]` em `rules_checked`.
 - Registre em `issues` SOMENTE violações. Regra que passou vai apenas em `rules_checked`;
   nunca crie um issue para dizer que nenhuma violação foi encontrada.
+- Para A01 e A03, preencha `evidence` com as palavras exatas copiadas do item apontado
+  (um trecho literal daquele título ou descrição). O servidor descarta qualquer issue cuja
+  evidência não esteja no item. Para A02, use `evidence` null.
 - Escreva todos os campos `message` e `reason` em português do Brasil (pt-BR).
 - Sempre que um item violar A01, A02 ou A03 (ou estiver listado em
   `deterministic_issues_for_rewrite`), forneça uma sugestão de reescrita em `suggestions` que
@@ -114,6 +121,7 @@ Responda exclusivamente com um único objeto JSON válido seguindo exatamente es
       "rule_id": "A01" | "A02" | "A03",
       "severity": "error" | "warning",
       "message": "Explicação concisa em português",
+      "evidence": "Palavras exatas copiadas do item apontado (null para A02)",
       "location": {{
         "field": "headline" | "description" | "path1" | "path2" | "final_url",
         "index": 0
