@@ -38,6 +38,8 @@ Evaluate the submitted RSA payload against ALL three semantic rules below:
 [Layer 3: Server Authority Constraint]
 - {DEGRADED_SENTINEL_EN}
 - You must include all three rule IDs `["A01", "A02", "A03"]` in `rules_checked`.
+- Report ONLY violations in `issues`. A rule that passes goes only in `rules_checked`;
+  never create an issue to say that no violation was found.
 - Write all issue `message` and suggestion `reason` fields in English.
 - Whenever an ad asset violates A01, A02, or A03 (or is listed in
   `deterministic_issues_for_rewrite`), provide a compliant rewrite in `suggestions` that
@@ -95,6 +97,8 @@ Avalie o anúncio RSA submetido contra TODAS as três regras semânticas abaixo:
 [Camada 3: Restrição de Autoridade do Servidor]
 - {DEGRADED_SENTINEL_PT}
 - Você DEVE incluir os três códigos `["A01", "A02", "A03"]` em `rules_checked`.
+- Registre em `issues` SOMENTE violações. Regra que passou vai apenas em `rules_checked`;
+  nunca crie um issue para dizer que nenhuma violação foi encontrada.
 - Escreva todos os campos `message` e `reason` em português do Brasil (pt-BR).
 - Sempre que um item violar A01, A02 ou A03 (ou estiver listado em
   `deterministic_issues_for_rewrite`), forneça uma sugestão de reescrita em `suggestions` que

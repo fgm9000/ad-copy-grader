@@ -329,7 +329,7 @@ def test_d07_passes_with_accents_and_singular_plural_stems(clean_pt_ad: AdInput)
     """Matches singular/plural and accents like Implante Dentário vs Implantes Dentários."""
     # Top 3 headlines in clean_pt_ad:
     # 0: "Implante Dentário Especialista"
-    # 1: "Implantes Dentários Seguros"
+    # 1: "Implantes Dentários Modernos"
     # 2: "Implante Dentário Avançado"
     assert check_d07(clean_pt_ad) == []
 
