@@ -9,7 +9,7 @@ import unicodedata
 from pydantic import BaseModel
 
 from ad_copy_grader.llm import ChatMessage, LlmClientError, ModelClient, ModelReply
-from ad_copy_grader.models import AdInput, GradeResult, Issue, Language
+from ad_copy_grader.models import AdInput, GradeResult, Issue, Language, Location
 from ad_copy_grader.parser import LlmOutputError, request_and_parse_review
 from ad_copy_grader.prompt import (
     SEMANTIC_RULE_IDS,
@@ -175,6 +175,31 @@ def _has_cta_in_descriptions(ad: AdInput) -> bool:
     return any(CTA_ACTION_PATTERN.search(_normalize_text(desc)) for desc in ad.descriptions)
 
 
+A02_MESSAGES: dict[Language, str] = {
+    "en": "No description contains a clear call-to-action (e.g., book, schedule, call).",
+    "pt": "Nenhuma descrição contém uma chamada para ação clara (ex.: agende, ligue, fale).",
+}
+
+
+def check_a02(ad: AdInput) -> list[Issue]:
+    """A02 is decided by code: flag when no description contains an action verb.
+
+    Live evals showed models both inventing and omitting A02 on the same ads, while the
+    check itself is a verb lookup that code does exactly. The rule ID stays A02.
+    """
+    if _has_cta_in_descriptions(ad):
+        return []
+    return [
+        Issue(
+            rule_id="A02",
+            severity="warning",
+            message=A02_MESSAGES[ad.lang],
+            location=Location(field="description", index=0),
+            source="code",
+        )
+    ]
+
+
 def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
     """Apply server authority filters to LLM-generated issues."""
     filtered: list[Issue] = []
@@ -188,7 +213,7 @@ def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
             _a01_asset_lacks_offer_signal(ad, issue) or _is_a01_supported_by_lp_context(ad, issue)
         ):
             continue
-        if rule_id == "A02" and _has_cta_in_descriptions(ad):
+        if rule_id == "A02":
             continue
         filtered.append(issue.model_copy(update={"rule_id": rule_id, "source": "llm"}))
     return filtered
@@ -238,7 +263,7 @@ async def grade(
     )
 
     filtered_llm_issues = filter_llm_issues(ad, raw_llm_issues)
-    merged_issues = [*deterministic_issues, *filtered_llm_issues]
+    merged_issues = [*deterministic_issues, *check_a02(ad), *filtered_llm_issues]
     valid_suggestions, discarded_count = validate_suggestions(ad, llm_review.suggestions)
     final_score, final_grade_10, final_passed = compute_score(merged_issues)
     all_rules_checked = [*DETERMINISTIC_RULE_IDS, *SEMANTIC_RULE_IDS]
@@ -260,16 +285,16 @@ async def grade(
 
 def build_degraded_result(ad: AdInput) -> GradeResult:
     """Build deterministic-only GradeResult when the semantic LLM review fails."""
-    deterministic_issues = run_rules(ad)
-    score, grade_10, passed = compute_score(deterministic_issues)
+    code_issues = [*run_rules(ad), *check_a02(ad)]
+    score, grade_10, passed = compute_score(code_issues)
     return GradeResult(
         score=score,
         grade_10=grade_10,
         passed=passed,
-        issues=deterministic_issues,
+        issues=code_issues,
         suggestions=[],
         discarded_suggestions_count=0,
-        rules_checked=list(DETERMINISTIC_RULE_IDS),
+        rules_checked=[*DETERMINISTIC_RULE_IDS, "A02"],
         model=None,
         degraded_reason=DEGRADED_MESSAGES[ad.lang],
     )
