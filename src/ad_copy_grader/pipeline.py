@@ -137,6 +137,17 @@ def _is_a01_supported_by_lp_context(ad: AdInput, issue: Issue) -> bool:
     return bool(matched_roots and any(root in lp_norm for root in matched_roots))
 
 
+CTA_ACTION_PATTERN = re.compile(
+    r"\b(book|schedul|call|contact|request|learn more|visit"
+    r"|agend|marqu|ligue|fale|solicit|saiba mais)"
+)
+
+
+def _has_cta_in_descriptions(ad: AdInput) -> bool:
+    """Return True if any description contains an action verb (code authority over A02)."""
+    return any(CTA_ACTION_PATTERN.search(_normalize_text(desc)) for desc in ad.descriptions)
+
+
 def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
     """Apply server authority filters to LLM-generated issues."""
     filtered: list[Issue] = []
@@ -147,6 +158,8 @@ def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
         if not _is_location_in_bounds(ad, issue):
             continue
         if rule_id == "A01" and _is_a01_supported_by_lp_context(ad, issue):
+            continue
+        if rule_id == "A02" and _has_cta_in_descriptions(ad):
             continue
         filtered.append(issue.model_copy(update={"rule_id": rule_id, "source": "llm"}))
     return filtered

@@ -1,9 +1,9 @@
 {
   "ruff_problems": 0,
   "mypy_errors": 0,
-  "tests_passed": 128,
+  "tests_passed": 130,
   "tests_skipped": 0,
   "coverage_percent": 100.0,
   "suppressions": 0,
-  "generated_at": "2026-11-14"
+  "generated_at": "2026-11-15"
 }

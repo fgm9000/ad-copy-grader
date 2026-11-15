@@ -517,3 +517,32 @@ async def test_grade_with_degradation_success(clean_ad_en: AdInput) -> None:
     assert result.score == 100
     assert result.degraded_reason is None
     assert result.model == "fake-model"
+
+
+def _a02_issue() -> Issue:
+    return Issue(
+        rule_id="A02",
+        severity="warning",
+        message="No clear call-to-action.",
+        location=Location(field="description", index=0),
+        source="llm",
+    )
+
+
+def test_filter_drops_a02_when_a_description_has_a_cta(clean_ad_pt: AdInput) -> None:
+    """Code has authority over A02: 'Agende sua avaliação' is a CTA, so the LLM claim is dropped."""
+    assert filter_llm_issues(clean_ad_pt, [_a02_issue()]) == []
+
+
+def test_filter_keeps_a02_when_no_description_has_a_cta(clean_ad_en: AdInput) -> None:
+    """A02 survives when no description contains an action verb (word-boundary match)."""
+    no_cta = clean_ad_en.model_copy(
+        update={
+            "descriptions": [
+                "Titanium dental implants with 3D digital planning.",
+                "Recall programs and modern biocompatible implant materials.",
+            ]
+        }
+    )
+    kept = filter_llm_issues(no_cta, [_a02_issue()])
+    assert [issue.rule_id for issue in kept] == ["A02"]
