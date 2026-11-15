@@ -1,0 +1,31 @@
+{
+  "headlines": [
+    "Contabilidade Online",
+    "Contabilidade para MEI",
+    "Escritório de Contabilidade",
+    "Abertura de Empresa",
+    "Declaração de IR",
+    "Folha de Pagamento",
+    "Contadores Registrados",
+    "Atendimento por WhatsApp",
+    "Emissão de Notas Fiscais",
+    "Planejamento Tributário",
+    "Relatórios Mensais",
+    "Troca de Contador Simples",
+    "Suporte para Pequenas Empresas",
+    "Sistema Fácil de Usar",
+    "Peça um Orçamento"
+  ],
+  "descriptions": [
+    "Contabilidade online para MEI e pequenas empresas. Peça um orçamento sem compromisso.",
+    "Abertura de empresa, folha de pagamento e emissão de notas fiscais em um só lugar.",
+    "Contadores registrados e relatórios mensais claros para acompanhar seu negócio.",
+    "Ficou com dúvida sobre impostos? Converse com um contador pelo WhatsApp."
+  ],
+  "path1": "contabilidade",
+  "path2": "mei",
+  "final_url": "https://exemplo-contabil.com.br/contabilidade-online",
+  "primary_service": "Contabilidade",
+  "lp_context": "A Contábil Exemplo oferece contabilidade online para MEI e pequenas empresas: abertura de empresa, declaração de IR, folha de pagamento, emissão de notas fiscais e planejamento tributário. Contadores registrados, relatórios mensais claros e sistema fácil de usar. Troca de contador simples. Atendimento por WhatsApp para tirar dúvidas sobre impostos. Peça um orçamento pelo site.",
+  "lang": "pt"
+}
