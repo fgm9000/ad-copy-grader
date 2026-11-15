@@ -130,6 +130,7 @@ async def request_and_parse_review(
         completion_tokens=first_reply.completion_tokens + second_reply.completion_tokens,
         total_tokens=first_reply.total_tokens + second_reply.total_tokens,
         cost_usd=round(first_reply.cost_usd + second_reply.cost_usd, 8),
+        upstream_cost_usd=round(first_reply.upstream_cost_usd + second_reply.upstream_cost_usd, 8),
         model=second_reply.model,
     )
 

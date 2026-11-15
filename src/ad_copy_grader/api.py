@@ -253,6 +253,7 @@ def log_grade_event(
         "llm_prompt_tokens": usage.prompt_tokens if usage else None,
         "llm_completion_tokens": usage.completion_tokens if usage else None,
         "llm_cost_usd": usage.cost_usd if usage else None,
+        "llm_upstream_cost_usd": usage.upstream_cost_usd if usage else None,
     }
     logger.info(json.dumps(payload))
 
