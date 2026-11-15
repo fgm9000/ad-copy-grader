@@ -1,0 +1,31 @@
+{
+  "headlines": [
+    "Physical Therapy Clinic",
+    "Sports Physical Therapy",
+    "Physical Therapy Near You",
+    "Licensed Physiotherapists",
+    "Back and Neck Pain Care",
+    "Personalized Exercise Plans",
+    "Post-Surgery Rehabilitation",
+    "Evening Appointments",
+    "Insurance Plans Accepted",
+    "Manual Therapy Sessions",
+    "Balance and Mobility Work",
+    "Book Your First Visit",
+    "Friendly Care Team",
+    "Downtown Location",
+    "Request an Assessment"
+  ],
+  "descriptions": [
+    "Physical therapy for back, neck and sports injuries. Book your first visit online today.",
+    "Licensed physiotherapists build an exercise plan around your goals and daily routine.",
+    "Evening appointments at our downtown clinic. Most insurance plans accepted.",
+    "Recover strength and mobility after surgery with guided sessions. Call us to schedule."
+  ],
+  "path1": "physio",
+  "path2": "back-pain",
+  "final_url": "https://example-physio.com/physical-therapy",
+  "primary_service": "Physical Therapy",
+  "lp_context": "Riverside Physical Therapy treats back, neck and sports injuries with licensed physiotherapists and personalized exercise plans. Post-surgery rehabilitation, manual therapy and balance work. Evening appointments at our downtown clinic. Most insurance plans accepted. Book your first visit online or request an assessment.",
+  "lang": "en"
+}

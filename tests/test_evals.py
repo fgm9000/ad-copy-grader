@@ -14,7 +14,10 @@ from ad_copy_grader.llm import (
     _price_digits_in_lp,
 )
 from ad_copy_grader.models import AdInput
+from ad_copy_grader.rules import run_rules
 from evals.cases import assert_case, build_eval_cases, get_tests
+from evals.holdout import build_holdout_cases
+from evals.holdout import get_tests as get_holdout_tests
 from evals.provider import _MEMORY_CACHE, RetryingEvalModelClient, call_api
 
 
@@ -221,3 +224,16 @@ def test_llm_helper_edge_cases() -> None:
     assert _price_digits_in_lp("$899", "Implants starting at $899 today.") is True
     assert _price_digits_in_lp("$499", "Implants starting at $899 today.") is False
     assert _price_digits_in_lp("free", "Implants starting at $899 today.") is False
+
+
+def test_holdout_cases_are_valid_and_code_clean() -> None:
+    """Held-out suite: 10 unique cases, EN/PT, and no deterministic issue (pure A* probes)."""
+    cases = build_holdout_cases()
+    assert len(cases) == 10
+    assert len({c["name"] for c in cases}) == 10
+    assert {AdInput(**c["payload"]).lang for c in cases} == {"en", "pt"}
+    for case in cases:
+        assert run_rules(AdInput(**case["payload"])) == [], case["name"]
+        assert set(case["expected_llm_rules"]) <= {"A01", "A02", "A03"}
+    tests = get_holdout_tests()
+    assert [t["vars"]["name"] for t in tests] == [c["name"] for c in cases]
