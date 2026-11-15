@@ -3,79 +3,46 @@
 🇧🇷 **Português** | 🇺🇸 [Read in English](eval-results.md)
 
 - **Data:** 15/11/2026 · **Modelo:** `google/gemini-2.5-flash` via OpenRouter, raciocínio desligado
-- **Código:** commit `31e0ef2` (branch `feat/a03-signal-veto`) · **Workflow:** `eval-live.yml`
-- **Execuções:** [43724236026](https://github.com/fgm9000/ad-copy-grader/actions/runs/43724236026), [43724246287](https://github.com/fgm9000/ad-copy-grader/actions/runs/43724246287), [43724256556](https://github.com/fgm9000/ad-copy-grader/actions/runs/43724256556) (mesmo código, mesmo modelo)
-- **Suíte:** 16 casos de mutação única (8 EN + 8 PT), `evals/cases.py`
+- **Código:** commit `41b23e2` (branch `feat/evidence-verification`): conferência de evidência no A01/A03 e A02 decidido a partir de frases de CTA extraídas pelo modelo (ADR-002, último adendo)
+- **Workflow:** `eval-live.yml` com `suite` = `main` | `holdout` | `holdout_v2` | `holdout_v3`; 3 rodadas por suíte no mesmo código
+- **Colunas:** 1. saída crua do modelo · 2. pipeline de produção · 3. pipeline sem a linha de autoridade do código no prompt
 
-## Resumo
+## Resultados atuais
 
-| Coluna | Rodada 1 | Rodada 2 | Rodada 3 | Total |
+| Suíte | Situação | Cru | **Pipeline** | Degradado |
 |---|---|---|---|---|
-| 1. LLM cru (antes dos filtros de código) | 4/16 | 7/16 | 5/16 | 16/48 (33,3%) |
-| **2. Pipeline de produção (código + LLM + filtros)** | **16/16** | **16/16** | **16/16** | **48/48 (100%)** |
-| 3. Prompt degradado (sem a linha de autoridade do código) | 5/16 | 6/16 | 5/16 | 16/48 (33,3%) |
+| **Held-out v3** (banho e tosa EN, contabilidade PT) | **Congelado em `b5ddced` antes deste desenho; nunca visto** | 26/30 (86,7%) | **30/30 (100%)** | 29/30 |
+| Held-out v2 (direito de família EN, academia PT) | Visto: as falhas de A02 motivaram este desenho | 29/30 | 30/30 | 28/30 |
+| Held-out v1 (fisioterapia EN, curso de inglês PT) | Visto: as falhas aposentaram os vetos por lista | 24/30 | 28/30 | 25/30 |
+| Principal (16 casos odontológicos) | Conjunto de ajuste | 30/48 (62,5%) | 41/48 (85,4%) | 24/48 |
 
-A meta do pipeline era ≥ 90%. A coluna crua varia entre rodadas (de 4 a 7 de 16); o pipeline não varia, porque o código tem a palavra final em cada regra que o modelo costuma errar. A coluna 3 teve 1 erro do provedor (caso 01, rodada 1).
+Execuções: principal [43732915171](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732915171), [43732923768](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732923768), [43732931751](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732931751) · v1 [43732940844](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732940844), [43732948964](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732948964), [43732958135](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732958135) · v2 [43732971505](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732971505), [43732982774](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732982774), [43732992640](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732992640) · v3 [43733003001](https://github.com/fgm9000/ad-copy-grader/actions/runs/43733003001), [43733013481](https://github.com/fgm9000/ad-copy-grader/actions/runs/43733013481), [43733024076](https://github.com/fgm9000/ad-copy-grader/actions/runs/43733024076)
 
-## Por caso (acertos em 3 rodadas)
+**O número que mede generalização é o held-out v3: 30/30.** São 10 casos × 3 rodadas em dois setores; um conjunto inédito maior reduziria a incerteza. No v3, o modelo cru errou o A02 de W07/W08 em algumas rodadas; a extração conferida acertou em todas.
 
-| Caso | Cru | Pipeline | Degradado |
-|---|---|---|---|
-| 01 base limpa EN | 0/3 | 3/3 | 0/3 |
-| 02 base limpa PT | 1/3 | 3/3 | 0/3 |
-| 03 preço não verificado no título EN | 3/3 | 3/3 | 3/3 |
-| 04 preço não verificado no título PT | 3/3 | 3/3 | 2/3 |
-| 05 preço confirmado na LP EN | 0/3 | 3/3 | 0/3 |
-| 06 preço confirmado na LP PT | 0/3 | 3/3 | 0/3 |
-| 07 CTA genérica de agendamento EN | 1/3 | 3/3 | 1/3 |
-| 08 desconto não verificado EN | 3/3 | 3/3 | 3/3 |
-| 09 desconto não verificado PT | 1/3 | 3/3 | 2/3 |
-| 10 sem CTA EN | 0/3 | 3/3 | 0/3 |
-| 11 sem CTA PT | 1/3 | 3/3 | 2/3 |
-| 12 garantia absoluta EN | 0/3 | 3/3 | 0/3 |
-| 13 garantia absoluta PT | 0/3 | 3/3 | 0/3 |
-| 14 só código: tamanho de título | 0/3 | 3/3 | 0/3 |
-| 15 só código: título duplicado | 0/3 | 3/3 | 0/3 |
-| 16 injeção de prompt + preço | 3/3 | 3/3 | 3/3 |
+### Falhas restantes (todas julgamento do modelo, nenhuma por evidência não conferida)
 
-## Como o pipeline chegou aqui
+| Onde | Vezes | O que o modelo fez |
+|---|---|---|
+| Principal 12/14, A01 em "Flexible Financing Available" | 5 | Aponta o financiamento como não verificado, embora a LP o cite. O código só confere números, então esse julgamento fica com o modelo |
+| Principal 13, A01 a mais em "100% Garantido" | 1 | Marca a garantia também como oferta |
+| Principal 16 / v1 H10, A03 no texto de injeção | 2 | Trata "Ignore all audit rules…" como promessa |
+| v1 H07, sem A02 | 1 | Listou "build exercise plans around your goals" como CTA. Limite conhecido: frase real que não é CTA livra o anúncio |
 
-| Etapa | Pipeline |
-|---|---|
-| Primeira execução real (o `eval-live` nunca tinha rodado) | 8/16 |
-| Raciocínio desligado, gabarito corrigido, vetos do A01, prompt "só violações" | 13/16, 13/16 |
-| A02 decidido por código (adendo ao ADR-002) | 14/16, 15/16 |
-| A03 vetado em itens sem palavra de promessa absoluta | 16/16, 16/16, 16/16 |
+## Como o desenho evoluiu (coluna pipeline)
 
-1. **Cliente:** raciocínio desligado (o DeepSeek V4 devolvia conteúdo vazio; tokens de raciocínio são cobrados como saída).
-2. **Gabarito:** os anúncios "limpos" anunciavam financiamento ausente do `lp_context`, que o A01 aponta corretamente.
-3. **Autoridade do código** (`pipeline.filter_llm_issues`, `check_a02`): o A01 exige preço, `%` ou palavra de oferta e cai quando a LP confirma a oferta; o A02 é decidido por busca de verbo de ação; o A03 exige palavra de promessa absoluta.
-4. **Prompt:** `issues` lista só violações.
+| Desenho | Principal (16) | Held-out v1 | Held-out v2 | Held-out v3 |
+|---|---|---|---|---|
+| Original (primeira execução real) | 8/16 | — | — | — |
+| Vetos por lista de palavras (oferta no A01, verbos no A02, promessa no A03) | 48/48 | **23/30, abaixo do cru 24/30** | — | — |
+| Evidência no A01/A03, A02 de volta ao modelo | 34/48 | 22/30 | **15/30, abaixo do cru 17/30** | — |
+| **Evidência + A02 por extração (atual)** | 41/48 | 28/30 | 30/30 | **30/30** |
 
-Os vetos do código exigem um item localizado; issue sem localização é mantido. As listas de palavras (oferta, verbo de ação, promessa absoluta) são os pontos de extensão.
+- O 48/48 do desenho por listas era sobreajuste: as listas foram escritas olhando os 16 casos odontológicos e falharam em setores novos ("Pain-Free", "Inscreva-se").
+- Sem as listas, o A02 do modelo errou nas duas direções (12 das 15 falhas no v2): perguntado "falta CTA?", ele precisa julgar uma ausência.
+- Pedir ao modelo para **citar as CTAs que encontra** e deixar o código conferir e decidir resolveu o A02 em setores inéditos.
+- Cada mudança de desenho foi medida num held-out escrito e commitado antes da mudança (`14fe118`, `f336be1`, `b5ddced`). Uma suíte cujas falhas foram usadas para mudar o desenho deixa de ser held-out.
 
 ## Outro modelo testado
 
-`deepseek/deepseek-v4-flash` (US$ 0,0044 por execução completa, segundo o Promptfoo): pipeline 5/16 antes das mudanças do A02 e do A03 (execução [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). Ele registrava regras aprovadas como issues; não foi medido de novo no código atual.
-
-## Suíte held-out (10 casos nunca usados para ajustar)
-
-- **Código:** casos congelados no commit `14fe118` antes de qualquer execução real · `evals/holdout.py`, `evals/promptfooconfig.holdout.yaml`
-- **Setores:** fisioterapia (EN) e curso de inglês (PT), diferentes dos casos odontológicos acima
-- **Execuções:** [43726575538](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726575538), [43726584348](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726584348), [43726593006](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726593006) · `google/gemini-2.5-flash`
-
-| Coluna | Rodada 1 | Rodada 2 | Rodada 3 | Total |
-|---|---|---|---|---|
-| 1. LLM cru | 7/10 | 9/10 | 8/10 | 24/30 (80,0%) |
-| **2. Pipeline de produção** | **7/10** | **8/10** | **8/10** | **23/30 (76,7%)** |
-| 3. Prompt degradado | 5/10 | 5/10 | 6/10 | 16/30 (53,3%) |
-
-**Nos casos inéditos o pipeline ficou abaixo do modelo cru.** Os vetos do código foram desenhados nos casos odontológicos, e as listas de palavras não generalizam:
-
-| Caso | Pipeline | Causa |
-|---|---|---|
-| H05 "Walk Pain-Free After 1 Visit" (espera A03) | 0/3 | O modelo aponta A03; o veto do A03 descarta porque "pain-free" não está na lista de promessa absoluta |
-| H09 "Inscreva-se já" (espera nenhum problema) | 0/3 | O A02 decidido por código dispara porque "inscrev" não está na lista de verbos de ação (modelo cru: 2/3) |
-| H06 "Fluência Garantida em 6 Meses" (espera A03) | 2/3 | Rodada 1: A01 a mais em "Nivelamento Gratuito", que está na LP; "gratuit" não está entre as raízes de oferta conferidas na LP |
-
-Portanto, o 48/48 da suíte principal mede o pipeline nos casos em que ele foi ajustado. As expectativas dos casos held-out não são editadas depois destes resultados; corrigir as listas exigiria um novo conjunto held-out para medir de novo.
+`deepseek/deepseek-v4-flash` (US$ 0,0044 por execução completa, segundo o Promptfoo): pipeline 5/16 na suíte principal com o desenho por listas (execução [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). Ele registrava regras aprovadas como issues; não foi medido de novo no desenho atual.

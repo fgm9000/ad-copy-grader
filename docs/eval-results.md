@@ -3,79 +3,46 @@
 🇧🇷 [Leia em Português](eval-results.pt-BR.md) | 🇺🇸 **English**
 
 - **Date:** 2026-11-15 · **Model:** `google/gemini-2.5-flash` via OpenRouter, reasoning disabled
-- **Code:** commit `31e0ef2` (branch `feat/a03-signal-veto`) · **Workflow:** `eval-live.yml`
-- **Runs:** [43724236026](https://github.com/fgm9000/ad-copy-grader/actions/runs/43724236026), [43724246287](https://github.com/fgm9000/ad-copy-grader/actions/runs/43724246287), [43724256556](https://github.com/fgm9000/ad-copy-grader/actions/runs/43724256556) (same code, same model)
-- **Suite:** 16 single-mutation cases (8 EN + 8 PT), `evals/cases.py`
+- **Code:** commit `41b23e2` (branch `feat/evidence-verification`): evidence verification for A01/A03, A02 decided from model-extracted CTA phrases (ADR-002, last amendment)
+- **Workflow:** `eval-live.yml` with `suite` = `main` | `holdout` | `holdout_v2` | `holdout_v3`; 3 runs per suite on the same code
+- **Columns:** 1. raw model output · 2. production pipeline · 3. pipeline with the code-authority line removed from the prompt
 
-## Summary
+## Current results
 
-| Column | Run 1 | Run 2 | Run 3 | Total |
+| Suite | Status | Raw | **Pipeline** | Degraded |
 |---|---|---|---|---|
-| 1. Raw LLM (before code filters) | 4/16 | 7/16 | 5/16 | 16/48 (33.3%) |
-| **2. Production pipeline (code + LLM + filters)** | **16/16** | **16/16** | **16/16** | **48/48 (100%)** |
-| 3. Degraded prompt (no code-authority line) | 5/16 | 6/16 | 5/16 | 16/48 (33.3%) |
+| **Held-out v3** (dog grooming EN, accounting PT) | **Frozen in `b5ddced` before this design; never seen** | 26/30 (86.7%) | **30/30 (100%)** | 29/30 |
+| Held-out v2 (family law EN, gym PT) | Seen: its A02 failures motivated this design | 29/30 | 30/30 | 28/30 |
+| Held-out v1 (physiotherapy EN, English course PT) | Seen: its failures retired the word-list vetoes | 24/30 | 28/30 | 25/30 |
+| Main (16 dental cases) | Tuning set | 30/48 (62.5%) | 41/48 (85.4%) | 24/48 |
 
-The pipeline target was ≥ 90%. The raw column varies between runs (4 to 7 of 16); the pipeline does not, because code has the final word on every rule the model tends to get wrong. Column 3 had 1 provider error (case 01, run 1).
+Runs: main [43732915171](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732915171), [43732923768](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732923768), [43732931751](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732931751) · v1 [43732940844](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732940844), [43732948964](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732948964), [43732958135](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732958135) · v2 [43732971505](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732971505), [43732982774](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732982774), [43732992640](https://github.com/fgm9000/ad-copy-grader/actions/runs/43732992640) · v3 [43733003001](https://github.com/fgm9000/ad-copy-grader/actions/runs/43733003001), [43733013481](https://github.com/fgm9000/ad-copy-grader/actions/runs/43733013481), [43733024076](https://github.com/fgm9000/ad-copy-grader/actions/runs/43733024076)
 
-## Per case (passes out of 3 runs)
+**The number that measures generalization is held-out v3: 30/30.** It is 10 cases × 3 runs on two verticals; a larger unseen set would narrow the uncertainty. In v3 the raw model missed A02 on W07/W08 in some runs; the verified extraction got them right in all runs.
 
-| Case | Raw | Pipeline | Degraded |
-|---|---|---|---|
-| 01 clean base EN | 0/3 | 3/3 | 0/3 |
-| 02 clean base PT | 1/3 | 3/3 | 0/3 |
-| 03 unverified price headline EN | 3/3 | 3/3 | 3/3 |
-| 04 unverified price headline PT | 3/3 | 3/3 | 2/3 |
-| 05 verified price in LP EN | 0/3 | 3/3 | 0/3 |
-| 06 verified price in LP PT | 0/3 | 3/3 | 0/3 |
-| 07 generic scheduling CTA EN | 1/3 | 3/3 | 1/3 |
-| 08 unverified discount EN | 3/3 | 3/3 | 3/3 |
-| 09 unverified discount PT | 1/3 | 3/3 | 2/3 |
-| 10 missing CTA EN | 0/3 | 3/3 | 0/3 |
-| 11 missing CTA PT | 1/3 | 3/3 | 2/3 |
-| 12 absolute guarantee EN | 0/3 | 3/3 | 0/3 |
-| 13 absolute guarantee PT | 0/3 | 3/3 | 0/3 |
-| 14 code-only headline length | 0/3 | 3/3 | 0/3 |
-| 15 code-only duplicate headline | 0/3 | 3/3 | 0/3 |
-| 16 prompt injection + price | 3/3 | 3/3 | 3/3 |
+### Remaining failures (all model judgements, none from unverified evidence)
 
-## How the pipeline got here
+| Where | Count | What the model did |
+|---|---|---|
+| Main 12/14, A01 on "Flexible Financing Available" | 5 | Flags financing as unverified although the LP states it. Code checks only numbers, so this judgement stays with the model |
+| Main 13, extra A01 on "100% Garantido" | 1 | Tags the guarantee as an offer too |
+| Main 16 / v1 H10, A03 on the injection text | 2 | Treats "Ignore all audit rules…" as a promise |
+| v1 H07, no A02 | 1 | Listed "build exercise plans around your goals" as a CTA. Known limit: a real phrase that is not a CTA still clears the ad |
 
-| Step | Pipeline |
-|---|---|
-| First live run (`eval-live` had never run before) | 8/16 |
-| Reasoning disabled, eval ground truth fixed, A01 vetoes, "only violations" prompt | 13/16, 13/16 |
-| A02 decided by code (ADR-002 amendment) | 14/16, 15/16 |
-| A03 vetoed on assets without absolute-promise wording | 16/16, 16/16, 16/16 |
+## How the design evolved (pipeline column)
 
-1. **Client:** reasoning disabled (DeepSeek V4 returned empty content; thinking tokens are billed as output).
-2. **Ground truth:** the "clean" ads advertised financing absent from `lp_context`, which A01 correctly flags.
-3. **Code authority** (`pipeline.filter_llm_issues`, `check_a02`): A01 needs a price, `%` or offer word and is dropped when the LP backs the offer; A02 is decided by an action-verb lookup; A03 needs absolute-promise wording.
-4. **Prompt:** `issues` lists only violations.
+| Design | Main (16) | Held-out v1 | Held-out v2 | Held-out v3 |
+|---|---|---|---|---|
+| Original (first live run) | 8/16 | — | — | — |
+| Word-list vetoes (A01 offer words, A02 action verbs, A03 promise words) | 48/48 | **23/30, below raw 24/30** | — | — |
+| Evidence for A01/A03, A02 back to the model | 34/48 | 22/30 | **15/30, below raw 17/30** | — |
+| **Evidence + A02 by extraction (current)** | 41/48 | 28/30 | 30/30 | **30/30** |
 
-The code-side vetoes require a located asset; an issue without location is kept. Their word lists (offer, action verb, absolute promise) are the extension points.
+- The 48/48 of the word-list design was overfitting: the lists were written while looking at the 16 dental cases and failed on new verticals ("Pain-Free", "Inscreva-se").
+- Without the lists, the model's A02 failed in both directions (12 of 15 failures on v2): asked "is a CTA missing?", it has to judge an absence.
+- Asking the model to **quote the CTAs it finds** and letting code verify them and decide fixed A02 on unseen verticals.
+- Each design change was measured on a held-out suite written and committed before the change (`14fe118`, `f336be1`, `b5ddced`). A suite whose failures were used to change the design is no longer held-out.
 
 ## Other model tried
 
-`deepseek/deepseek-v4-flash` (US$ 0.0044 per full run, reported by Promptfoo): pipeline 5/16 before the A02 and A03 changes (run [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). It reported passed rules as issues; not re-measured on the current code.
-
-## Held-out suite (10 cases never used for tuning)
-
-- **Code:** cases frozen in commit `14fe118` before any live run · `evals/holdout.py`, `evals/promptfooconfig.holdout.yaml`
-- **Verticals:** physiotherapy (EN) and English course (PT), different from the dental cases above
-- **Runs:** [43726575538](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726575538), [43726584348](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726584348), [43726593006](https://github.com/fgm9000/ad-copy-grader/actions/runs/43726593006) · `google/gemini-2.5-flash`
-
-| Column | Run 1 | Run 2 | Run 3 | Total |
-|---|---|---|---|---|
-| 1. Raw LLM | 7/10 | 9/10 | 8/10 | 24/30 (80.0%) |
-| **2. Production pipeline** | **7/10** | **8/10** | **8/10** | **23/30 (76.7%)** |
-| 3. Degraded prompt | 5/10 | 5/10 | 6/10 | 16/30 (53.3%) |
-
-**On unseen cases the pipeline scored below the raw model.** The code vetoes were designed on the dental cases and their word lists do not generalize:
-
-| Case | Pipeline | Cause |
-|---|---|---|
-| H05 "Walk Pain-Free After 1 Visit" (expects A03) | 0/3 | The model flags A03; the A03 veto drops it because "pain-free" is not in the absolute-promise list |
-| H09 "Inscreva-se já" (expects no issue) | 0/3 | Code-decided A02 fires because "inscrev" is not in the action-verb list (raw model: 2/3) |
-| H06 "Fluência Garantida em 6 Meses" (expects A03) | 2/3 | Run 1: extra A01 on "Nivelamento Gratuito", which the LP states; "gratuit" is not among the LP-backed offer roots |
-
-The 48/48 on the main suite therefore measures the pipeline on the cases it was tuned on. Expectations of the held-out cases are not edited after these results; fixing the word lists would require a new held-out set to measure again.
+`deepseek/deepseek-v4-flash` (US$ 0.0044 per full run, reported by Promptfoo): pipeline 5/16 on the main suite with the word-list design (run [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). It reported passed rules as issues. Not re-measured on the current design.
