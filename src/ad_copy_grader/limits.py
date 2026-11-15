@@ -95,11 +95,16 @@ class RateLimiter:
 
 
 def extract_client_ip(x_forwarded_for: str | None, fallback_host: str | None) -> str:
-    """Extract client IP from X-Forwarded-For header or fallback host."""
-    if x_forwarded_for and x_forwarded_for.strip():
-        first_ip = x_forwarded_for.split(",")[0].strip()
-        if first_ip:
-            return first_ip
+    """Extract the client IP appended by Cloud Run's Google Front End, or the fallback host.
+
+    The GFE appends the real client IP as the LAST X-Forwarded-For entry; anything before it
+    is client-supplied and forgeable (verified on 2026-11-15: no header -> 1 entry, forged
+    header -> 2 entries). Using the first entry would let a client bypass the per-IP limit.
+    """
+    if x_forwarded_for:
+        entries = [part.strip() for part in x_forwarded_for.split(",") if part.strip()]
+        if entries:
+            return entries[-1]
     return fallback_host or "unknown"
 
 

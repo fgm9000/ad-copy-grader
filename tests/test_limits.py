@@ -157,11 +157,14 @@ def test_extract_client_ip() -> None:
     # Single IP in X-Forwarded-For
     assert extract_client_ip("203.0.113.195", None) == "203.0.113.195"
 
-    # Multiple comma-separated IPs in X-Forwarded-For (takes first)
-    assert extract_client_ip("203.0.113.195, 70.41.3.18, 150.172.238.178", None) == "203.0.113.195"
+    # Multiple entries: the last one is appended by the GFE; earlier ones are forgeable
+    assert (
+        extract_client_ip("203.0.113.195, 70.41.3.18, 150.172.238.178", None) == "150.172.238.178"
+    )
+    assert extract_client_ip("198.51.100.77, 203.0.113.195", None) == "203.0.113.195"
 
     # Leading/trailing whitespace in header
-    assert extract_client_ip("   203.0.113.195   , 10.0.0.1 ", "127.0.0.1") == "203.0.113.195"
+    assert extract_client_ip("   10.0.0.1   , 203.0.113.195 ", "127.0.0.1") == "203.0.113.195"
 
     # None header falls back to client host
     assert extract_client_ip(None, "192.168.1.50") == "192.168.1.50"
