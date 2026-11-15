@@ -537,7 +537,8 @@ async def test_fake_model_client_features() -> None:
     audit_data = json.loads(audit_reply.content)
     rule_ids = [issue["rule_id"] for issue in audit_data["issues"]]
     assert "A01" in rule_ids
-    assert "A02" in rule_ids
+    assert "A02" not in rule_ids  # A02 is decided by the server from cta_phrases
+    assert audit_data["cta_phrases"] == []  # no description invites the user to act
     assert "A03" in rule_ids
     assert "D04" in rule_ids  # Degraded mode because system prompt lacked sentinel
 

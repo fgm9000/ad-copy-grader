@@ -9,6 +9,7 @@ import pytest
 from ad_copy_grader.llm import FakeModelClient, LlmClientError, ModelReply
 from ad_copy_grader.models import AdInput, Issue, Location
 from ad_copy_grader.pipeline import (
+    A02_MESSAGES,
     DEGRADED_MESSAGES,
     _extract_normalized_numbers,
     _is_a01_supported_by_lp_context,
@@ -16,9 +17,11 @@ from ad_copy_grader.pipeline import (
     _normalize_text,
     _referenced_ad_text,
     compute_score,
+    decide_a02,
     filter_llm_issues,
     grade,
     grade_with_degradation,
+    verify_cta_phrases,
 )
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
@@ -48,6 +51,7 @@ def _make_llm_reply(
     issues: list[dict[str, Any]],
     rules_checked: list[str] | None = None,
     suggestions: list[dict[str, Any]] | None = None,
+    cta_phrases: list[str] | None = None,
 ) -> ModelReply:
     """Helper to generate a structured JSON ModelReply."""
     content = json.dumps(
@@ -55,6 +59,7 @@ def _make_llm_reply(
             "issues": issues,
             "rules_checked": rules_checked or ["A01", "A02", "A03"],
             "suggestions": suggestions or [],
+            "cta_phrases": cta_phrases or [],
         }
     )
     return ModelReply(
@@ -397,7 +402,8 @@ async def test_llm_a01_on_non_numeric_phrase_is_left_to_the_model(clean_ad_en: A
                 "location": {"field": "headline", "index": 4},
                 "evidence": "Book Your 3D Scan Today",
             }
-        ]
+        ],
+        cta_phrases=["Schedule your consultation today"],
     )
     result = await grade(clean_ad_en, FakeModelClient(responses=[reply]))
 
@@ -560,10 +566,58 @@ def test_evidence_without_location_is_searched_in_all_assets(clean_ad_pt: AdInpu
     assert filter_llm_issues(clean_ad_pt, [_llm_issue("A03", "frase que não existe")]) == []
 
 
-def test_a02_is_exempt_from_evidence(clean_ad_en: AdInput) -> None:
-    """A02 reports an absence (no CTA), so there is nothing to quote."""
+def test_llm_a02_issues_are_dropped(clean_ad_en: AdInput) -> None:
+    """The model may not decide A02; the server decides it from verified cta_phrases."""
     a02 = _llm_issue("A02", None, Location(field="description", index=0))
-    assert [i.rule_id for i in filter_llm_issues(clean_ad_en, [a02])] == ["A02"]
+    assert filter_llm_issues(clean_ad_en, [a02]) == []
+
+
+def test_verify_cta_phrases_keeps_only_verbatim_description_text(clean_ad_pt: AdInput) -> None:
+    """Phrases must exist in a description (case/accents ignored); repeats and inventions go."""
+    phrases = [
+        "agende sua avaliacao hoje",
+        "Agende sua avaliação hoje",
+        "Agende sua avaliação hoje",
+        "Ligue agora",
+        "Agende sua Avaliação",
+        "  ",
+    ]
+    verified = verify_cta_phrases(clean_ad_pt, phrases)
+    assert verified == [
+        "agende sua avaliacao hoje",
+        "Agende sua avaliação hoje",
+        "Agende sua Avaliação",
+    ]
+    # A headline-only phrase is not a description CTA
+    assert verify_cta_phrases(clean_ad_pt, ["Marque Sua Consulta Online"]) == []
+
+
+def test_decide_a02_flags_only_when_no_verified_phrase_is_left(clean_ad_en: AdInput) -> None:
+    """Zero proofs of a CTA -> A02 (code-decided); one or more -> no A02."""
+    assert decide_a02(clean_ad_en, ["Book your visit online now"]) == []
+    issues = decide_a02(clean_ad_en, [])
+    assert [(i.rule_id, i.severity, i.source) for i in issues] == [("A02", "warning", "code")]
+    assert issues[0].message == A02_MESSAGES["en"]
+
+
+@pytest.mark.anyio
+async def test_grade_a02_raw_trusts_model_final_verifies_phrases(clean_ad_en: AdInput) -> None:
+    """An invented CTA fools the raw column but not the pipeline; verified phrases are returned."""
+    invented = _make_llm_reply(issues=[], cta_phrases=["Call us now"])
+    result = await grade(clean_ad_en, FakeModelClient(responses=[invented]))
+    assert [i.rule_id for i in result.raw.issues] == []
+    assert [i.rule_id for i in result.final.issues] == ["A02"]
+    assert result.raw.cta_phrases == ["Call us now"]
+    assert result.final.cta_phrases == []
+
+    real = _make_llm_reply(issues=[], cta_phrases=["Book your visit online now"])
+    result_ok = await grade(clean_ad_en, FakeModelClient(responses=[real]))
+    assert result_ok.final.issues == []
+    assert result_ok.final.cta_phrases == ["Book your visit online now"]
+
+    empty = _make_llm_reply(issues=[])
+    result_empty = await grade(clean_ad_en, FakeModelClient(responses=[empty]))
+    assert [i.rule_id for i in result_empty.raw.issues] == ["A02"]
 
 
 def test_a01_numbers_are_checked_from_the_quoted_evidence(clean_ad_en: AdInput) -> None:

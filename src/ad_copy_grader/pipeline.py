@@ -9,7 +9,7 @@ import unicodedata
 from pydantic import BaseModel
 
 from ad_copy_grader.llm import ChatMessage, LlmClientError, ModelClient, ModelReply
-from ad_copy_grader.models import AdInput, GradeResult, Issue, Language
+from ad_copy_grader.models import AdInput, GradeResult, Issue, Language, Location
 from ad_copy_grader.parser import LlmOutputError, request_and_parse_review
 from ad_copy_grader.prompt import (
     SEMANTIC_RULE_IDS,
@@ -122,9 +122,6 @@ def _is_a01_supported_by_lp_context(ad: AdInput, issue: Issue) -> bool:
     )
 
 
-EVIDENCE_EXEMPT_RULES: frozenset[str] = frozenset({"A02"})
-
-
 def _match_key(text: str) -> str:
     """Normalize text for verbatim matching: accents, case, quotes and whitespace."""
     normalized = _normalize_text(unicodedata.normalize("NFC", text))
@@ -136,15 +133,12 @@ def _ad_texts(ad: AdInput) -> list[str]:
     return [*ad.headlines, *ad.descriptions, ad.path1 or "", ad.path2 or ""]
 
 
-def _has_verbatim_evidence(ad: AdInput, issue: Issue, rule_id: str) -> bool:
+def _has_verbatim_evidence(ad: AdInput, issue: Issue) -> bool:
     """Code check of the LLM's quote: the evidence must be a substring of the flagged asset.
 
     The model judges whether a phrase violates the rule; code only verifies that the quoted
-    phrase really exists where the model says it does. A02 (missing CTA) is about an absence,
-    so there is nothing to quote and it is exempt.
+    phrase really exists where the model says it does.
     """
-    if rule_id in EVIDENCE_EXEMPT_RULES:
-        return True
     evidence = _match_key(issue.evidence or "")
     if not evidence:
         return False
@@ -167,12 +161,47 @@ def filter_llm_issues(ad: AdInput, llm_issues: list[Issue]) -> list[Issue]:
             continue
         if not _is_location_in_bounds(ad, issue):
             continue
-        if not _has_verbatim_evidence(ad, issue, rule_id):
+        if rule_id == "A02":
+            continue  # decided by code from the verified cta_phrases (decide_a02)
+        if not _has_verbatim_evidence(ad, issue):
             continue
         if rule_id == "A01" and _is_a01_supported_by_lp_context(ad, issue):
             continue
         filtered.append(issue.model_copy(update={"rule_id": rule_id, "source": "llm"}))
     return filtered
+
+
+A02_MESSAGES: dict[Language, str] = {
+    "en": "No description contains a call-to-action (no verified CTA phrase).",
+    "pt": "Nenhuma descrição contém chamada para ação (nenhuma frase de CTA confirmada).",
+}
+
+
+def verify_cta_phrases(ad: AdInput, phrases: list[str]) -> list[str]:
+    """Keep only CTA phrases that exist verbatim in some description (order kept, no repeats)."""
+    descriptions = [_match_key(desc) for desc in ad.descriptions]
+    verified: list[str] = []
+    for phrase in phrases:
+        key = _match_key(phrase)
+        if key and phrase not in verified and any(key in desc for desc in descriptions):
+            verified.append(phrase)
+    return verified
+
+
+def decide_a02(ad: AdInput, cta_phrases: list[str]) -> list[Issue]:
+    """A02 = no description has a CTA. The model supplies candidate CTA phrases (proofs of
+    existence); code keeps the ones that really exist and flags A02 only when none is left."""
+    if cta_phrases:
+        return []
+    return [
+        Issue(
+            rule_id="A02",
+            severity="warning",
+            message=A02_MESSAGES[ad.lang],
+            location=Location(field="description", index=0),
+            source="code",
+        )
+    ]
 
 
 def compute_score(issues: list[Issue]) -> tuple[int, float, bool]:
@@ -203,7 +232,13 @@ async def grade(
     ]
 
     llm_review, usage = await request_and_parse_review(client, messages, lang=ad.lang)
-    raw_llm_issues = [item.to_issue() for item in llm_review.issues]
+    llm_issues = [item.to_issue() for item in llm_review.issues]
+    # Raw column = the model alone: its issues, plus A02 if it listed no CTA phrase at all
+    # (its own extraction, before any verification).
+    raw_llm_issues = [
+        *(i for i in llm_issues if i.rule_id.strip().upper() != "A02"),
+        *decide_a02(ad, list(llm_review.cta_phrases)),
+    ]
     raw_score, raw_grade_10, raw_passed = compute_score(raw_llm_issues)
 
     raw_result = GradeResult(
@@ -216,10 +251,12 @@ async def grade(
         rules_checked=list(llm_review.rules_checked),
         model=usage.model,
         degraded_reason=None,
+        cta_phrases=list(llm_review.cta_phrases),
     )
 
-    filtered_llm_issues = filter_llm_issues(ad, raw_llm_issues)
-    merged_issues = [*deterministic_issues, *filtered_llm_issues]
+    filtered_llm_issues = filter_llm_issues(ad, llm_issues)
+    verified_ctas = verify_cta_phrases(ad, list(llm_review.cta_phrases))
+    merged_issues = [*deterministic_issues, *filtered_llm_issues, *decide_a02(ad, verified_ctas)]
     valid_suggestions, discarded_count = validate_suggestions(ad, llm_review.suggestions)
     final_score, final_grade_10, final_passed = compute_score(merged_issues)
     all_rules_checked = [*DETERMINISTIC_RULE_IDS, *SEMANTIC_RULE_IDS]
@@ -234,6 +271,7 @@ async def grade(
         rules_checked=all_rules_checked,
         model=usage.model,
         degraded_reason=None,
+        cta_phrases=verified_ctas,
     )
 
     return PipelineResult(raw=raw_result, final=final_result, usage=usage)

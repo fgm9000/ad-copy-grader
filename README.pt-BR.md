@@ -64,7 +64,7 @@ flowchart LR
 | **`D10`** | Palavra em CAIXA ALTA (`>= 4` letras, fora da lista de siglas) | Código Determinístico | `warning` | `-5 pts` |
 | **`D11`** | URL final ausente, malformada ou não HTTPS | Código Determinístico | `error` | `-15 pts` |
 | **`A01`** | Preço, desconto ou condição concreta ausente do `lp_context` | LLM + Filtro de Código | `error` | `-15 pts` |
-| **`A02`** | Nenhuma descrição possui chamada para ação (CTA) clara | Código (busca de verbo de ação) | `warning` | `-5 pts` |
+| **`A02`** | Nenhuma descrição possui chamada para ação (CTA) clara | LLM extrai frases de CTA + código confere e decide | `warning` | `-5 pts` |
 | **`A03`** | Promessa clínica/financeira absoluta (ex.: `"resultado 100% garantido"`) | LLM + Filtro de Código | `warning` | `-5 pts` |
 
 **Fórmula de Pontuação:**
@@ -94,7 +94,7 @@ Todo push e pull request passa por [`.github/workflows/ci.yml`](.github/workflow
 | :--- | :--- | :--- |
 | **Lint & Formatação** | `ruff check .` + `ruff format --check .` (`E,F,I,B,UP,S,N,SIM`) | `0` problemas |
 | **Tipagem Estática Estrita** | `mypy --strict` | `0` erros |
-| **Testes Unitários e Integração** | `pytest --cov=ad_copy_grader` | `135` passando, `0` pulados, **`100.0%`** cobertura |
+| **Testes Unitários e Integração** | `pytest --cov=ad_copy_grader` | `138` passando, `0` pulados, **`100.0%`** cobertura |
 | **Catraca Zero-Supressão** | `scripts/quality_check.py` (`# noqa`, `# type: ignore`, `pragma: no cover`) | `0` supressões |
 | **SAST (OWASP Top 10 & FastAPI)** | `semgrep scan --config p/owasp-top-ten --config p/python --config p/fastapi --error` | Gate bloqueante na CI |
 | **Análise Semântica de Fluxo (Taint)** | GitHub CodeQL (`security-extended,security-and-quality`) | Ativo em `push`, `PR` e cron semanal |
