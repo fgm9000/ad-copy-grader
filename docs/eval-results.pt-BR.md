@@ -43,6 +43,17 @@ Execuções: principal [43732915171](https://github.com/fgm9000/ad-copy-grader/a
 - Pedir ao modelo para **citar as CTAs que encontra** e deixar o código conferir e decidir resolveu o A02 em setores inéditos.
 - Cada mudança de desenho foi medida num held-out escrito e commitado antes da mudança (`14fe118`, `f336be1`, `b5ddced`). Uma suíte cujas falhas foram usadas para mudar o desenho deixa de ser held-out.
 
-## Outro modelo testado
+## Outros modelos testados
 
-`deepseek/deepseek-v4-flash` (US$ 0,0044 por execução completa, segundo o Promptfoo): pipeline 5/16 na suíte principal com o desenho por listas (execução [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). Ele registrava regras aprovadas como issues; não foi medido de novo no desenho atual.
+**`google/gemini-2.5-flash-lite`** (15/11/2026, desenho atual, commit `1633828`, 3 rodadas por suíte): cerca de 4× mais barato por chamada, mas pior em todas as suítes. A produção continua no Gemini 2.5 Flash.
+
+| Suíte | Flash (pipeline) | Flash-Lite (pipeline) |
+|---|---|---|
+| Held-out v3 | 30/30 | 24/30 |
+| Held-out v2 | 30/30 | 20/30 |
+| Held-out v1 | 28/30 | 21/30 |
+| Principal | 41/48 | 35/48 |
+
+Na suíte principal, o Flash-Lite devolveu de 11 a 17 respostas por rodada fora do schema mesmo depois do retry do parser, o que em produção deixaria esses anúncios só com o resultado do código. Execuções: principal [43737449716](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737449716), [43737458970](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737458970), [43737467973](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737467973) · v3 [43737534778](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737534778), [43737545091](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737545091), [43737554811](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737554811).
+
+**`deepseek/deepseek-v4-flash`** (US$ 0,0044 por execução completa, segundo o Promptfoo): pipeline 5/16 na suíte principal com o desenho por listas (execução [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). Ele registrava regras aprovadas como issues; não foi medido de novo no desenho atual.

@@ -43,6 +43,17 @@ Runs: main [43732915171](https://github.com/fgm9000/ad-copy-grader/actions/runs/
 - Asking the model to **quote the CTAs it finds** and letting code verify them and decide fixed A02 on unseen verticals.
 - Each design change was measured on a held-out suite written and committed before the change (`14fe118`, `f336be1`, `b5ddced`). A suite whose failures were used to change the design is no longer held-out.
 
-## Other model tried
+## Other models tried
 
-`deepseek/deepseek-v4-flash` (US$ 0.0044 per full run, reported by Promptfoo): pipeline 5/16 on the main suite with the word-list design (run [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). It reported passed rules as issues. Not re-measured on the current design.
+**`google/gemini-2.5-flash-lite`** (2026-11-15, current design, commit `1633828`, 3 runs per suite): about 4× cheaper per call, but worse on every suite. Production stays on Gemini 2.5 Flash.
+
+| Suite | Flash (pipeline) | Flash-Lite (pipeline) |
+|---|---|---|
+| Held-out v3 | 30/30 | 24/30 |
+| Held-out v2 | 30/30 | 20/30 |
+| Held-out v1 | 28/30 | 21/30 |
+| Main | 41/48 | 35/48 |
+
+On the main suite Flash-Lite returned 11–17 responses per run that failed schema validation even after the parser retry, which would degrade those ads to code-only results in production. Runs: main [43737449716](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737449716), [43737458970](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737458970), [43737467973](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737467973) · v3 [43737534778](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737534778), [43737545091](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737545091), [43737554811](https://github.com/fgm9000/ad-copy-grader/actions/runs/43737554811).
+
+**`deepseek/deepseek-v4-flash`** (US$ 0.0044 per full run, reported by Promptfoo): pipeline 5/16 on the main suite with the word-list design (run [43721544696](https://github.com/fgm9000/ad-copy-grader/actions/runs/43721544696)). It reported passed rules as issues. Not re-measured on the current design.

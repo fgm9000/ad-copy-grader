@@ -17,6 +17,10 @@ const TRANSLATIONS = {
     appSubtitle: "Hybrid Deterministic & LLM Google Ads RSA Auditor",
     swaggerNavLink: "Live Swagger API (/docs) ↗",
     showcaseBadge: "Interactive Architecture Showcase",
+    backToGithub: "← More projects on GitHub",
+    introTitle: "What this is",
+    introBody:
+      "Ad Copy Grader audits Google Ads responsive search ads before they go live. <strong>Python code</strong> checks the 11 mechanical rules (character limits, duplicates, punctuation, final URL). <strong>An LLM</strong> (Gemini 2.5 Flash) checks 3 semantic rules (prices the landing page does not confirm, missing call-to-action, absolute promises) and must quote the exact words behind each finding, which the code verifies before scoring. On 10 ads from sectors it had never seen (3 runs), the pipeline got 30/30; the model alone, 26/30. The scenarios below run in your browser; <em>Verify on Cloud Run API</em> sends the ad to the live FastAPI service on Google Cloud Run.",
     onboardingTitle: "How to explore this project in 30 seconds",
     onboardingPill: "Quick 30–60s Reviewer Walkthrough",
     step1Title: "1. See Highlighted Errors & LP Numbers",
@@ -78,7 +82,7 @@ const TRANSLATIONS = {
       "Semantic rules evaluate unverified pricing vs. LP context (A01), missing CTA in descriptions (A02), and clinical/financial guarantees (A03). Uses native Portuguese (PROMPT_PT) and English (PROMPT_EN) system prompts with <ad_payload> XML fencing against prompt injection, parsed by Pydantic with 1 automatic self-correction retry on malformed outputs.",
     archCard3Title: "Server Code Authority Filter",
     archCard3Body:
-      "The server never blindly trusts LLM outputs. filter_llm_issues() acts as an automated boundary: strips any deterministic D* rule hallucinated by the model, drops out-of-bounds asset index hallucination, and suppresses A01 false positives whenever the flagged price or offer actually exists in lp_context (as proven in Scenario 2).",
+      "The server never blindly trusts LLM outputs. filter_llm_issues() only verifies facts: it strips any D* rule the model invents, drops out-of-bounds locations, discards A01/A03 findings whose quoted evidence is not in the ad, and suppresses A01 when the quoted price exists in lp_context (Scenario 2). For A02 the model lists the call-to-action phrases it finds; code keeps the ones that really exist and flags A02 only when none is left.",
     archCard4Title: "Validated Rewrites & 3-Column Evals",
     archCard4Body:
       "validate_suggestions() re-audits every LLM rewrite against rules D04/D05/D08/D09/D10; non-compliant rewrites are discarded before reaching the user. Validated with a 3-column Promptfoo evaluation suite (raw vs. pipeline vs. degraded) and CI gates: ruff, mypy --strict, pytest (100% coverage), Semgrep OWASP Top 10, and CodeQL.",
@@ -98,6 +102,10 @@ const TRANSLATIONS = {
     appSubtitle: "Auditor Híbrido Determinístico e LLM para Google Ads RSA",
     swaggerNavLink: "Swagger API ao Vivo (/docs) ↗",
     showcaseBadge: "Demonstração Interativa da Arquitetura",
+    backToGithub: "← Mais projetos no GitHub",
+    introTitle: "O que é isto",
+    introBody:
+      "O Ad Copy Grader audita anúncios responsivos do Google Ads antes de irem ao ar. O <strong>código Python</strong> confere as 11 regras mecânicas (limite de caracteres, duplicatas, pontuação, URL final). Um <strong>LLM</strong> (Gemini 2.5 Flash) avalia 3 regras semânticas (preço que a landing page não confirma, falta de chamada para ação, promessa absoluta) e precisa citar as palavras exatas de cada problema, que o código confere antes de dar a nota. Em 10 anúncios de setores que ele nunca tinha visto (3 rodadas), o pipeline acertou 30/30; o modelo sozinho, 26/30. Os cenários abaixo rodam no seu navegador; <em>Validar na API Cloud Run</em> envia o anúncio para a API FastAPI publicada no Google Cloud Run.",
     onboardingTitle: "Como explorar este projeto em 30 segundos",
     onboardingPill: "Roteiro Rápido de Avaliação em 30–60s",
     step1Title: "1. Veja os Erros e Números da LP Grifados",
@@ -159,7 +167,7 @@ const TRANSLATIONS = {
       "Regras semânticas avaliam preços não verificados na LP (A01), ausência de CTA nas descrições (A02) e garantias absolutas (A03). Usa prompts nativos em Português (PROMPT_PT) e Inglês (PROMPT_EN) com isolamento XML <ad_payload> contra prompt injection, validados via Pydantic com 1 retry automático de autocorreção.",
     archCard3Title: "Filtro de Autoridade do Código",
     archCard3Body:
-      "O servidor nunca confia cegamente no LLM. filter_llm_issues() atua como fronteira: descarta qualquer regra D* alucinada pelo modelo, remove índices fora dos limites e suprime falsos positivos de A01 sempre que o preço ou oferta existir em lp_context (como demonstrado no Cenário 2).",
+      "O servidor nunca confia cegamente no LLM. filter_llm_issues() só confere fatos: descarta regras D* inventadas pelo modelo, remove localizações inexistentes, descarta A01/A03 cuja evidência citada não está no anúncio e suprime o A01 quando o preço citado existe em lp_context (Cenário 2). No A02, o modelo lista as frases de chamada para ação que encontra; o código mantém as que existem de verdade e aponta A02 só quando não sobra nenhuma.",
     archCard4Title: "Reescritas Validadas & Evals em 3 Colunas",
     archCard4Body:
       "validate_suggestions() re-audita cada sugestão do LLM contra as regras D04/D05/D08/D09/D10; sugestões fora do limite são descartadas. Validado com suíte Promptfoo em 3 colunas (raw vs. pipeline vs. degraded) e gates de CI: ruff, mypy --strict, pytest (100% cobertura), Semgrep OWASP Top 10 e CodeQL.",
@@ -440,7 +448,7 @@ function renderHeadlinesInputs(headlines) {
     row.dataset.index = i;
 
     const label = document.createElement("span");
-    label.className = "w-6 text-right text-[11px] font-mono text-slate-400 font-semibold";
+    label.className = "w-6 text-right text-[11px] font-mono text-slate-600 font-semibold";
     label.textContent = `#${i + 1}`;
 
     const inputWrapper = document.createElement("div");
@@ -460,7 +468,7 @@ function renderHeadlinesInputs(headlines) {
     rulePill.className = "headline-rule-pill hidden px-1 rounded text-[10px] font-mono font-bold";
 
     const counter = document.createElement("span");
-    counter.className = "counter-badge text-[10px] font-mono font-medium text-slate-400";
+    counter.className = "counter-badge text-[10px] font-mono font-medium text-slate-600";
     counter.textContent = `${val.length}/30`;
 
     rightBadges.appendChild(rulePill);
@@ -502,7 +510,7 @@ function renderDescriptionsInputs(descriptions) {
     label.textContent = `${TRANSLATIONS[state.lang].descriptionPlaceholder} ${i + 1}`;
 
     const counter = document.createElement("span");
-    counter.className = "desc-counter text-[10px] font-mono font-medium text-slate-400";
+    counter.className = "desc-counter text-[10px] font-mono font-medium text-slate-600";
     counter.textContent = `${val.length}/90`;
 
     header.appendChild(label);
@@ -557,12 +565,12 @@ function updatePathCounters() {
 
   elements.path1Counter.className =
     p1Len > 15
-      ? "text-[10px] font-mono font-bold text-rose-600"
-      : "text-[10px] font-mono font-medium text-slate-400";
+      ? "text-[10px] font-mono font-bold text-rose-700"
+      : "text-[10px] font-mono font-medium text-slate-600";
   elements.path2Counter.className =
     p2Len > 15
-      ? "text-[10px] font-mono font-bold text-rose-600"
-      : "text-[10px] font-mono font-medium text-slate-400";
+      ? "text-[10px] font-mono font-bold text-rose-700"
+      : "text-[10px] font-mono font-medium text-slate-600";
 }
 
 // Render Highlighted Landing Page View & Token Pills
@@ -670,7 +678,7 @@ function renderLpHighlightedAndTokens(lpContext, rawHeadlines) {
       const sectionLabel = sectionLabels[pIdx] || `Section ${pIdx + 1}`;
       return `
         <div class="space-y-0.5">
-          <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">${sectionLabel}</span>
+          <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-500">${sectionLabel}</span>
           <p class="text-xs text-slate-700 leading-relaxed">${highlightedPara}</p>
         </div>
       `;
@@ -685,7 +693,7 @@ function renderLpHighlightedAndTokens(lpContext, rawHeadlines) {
 
   if (uniqueTokens.length === 0) {
     const empty = document.createElement("span");
-    empty.className = "text-[11px] text-slate-400 italic";
+    empty.className = "text-[11px] text-slate-500 italic";
     empty.textContent = dict.noTokensDetected;
     elements.detectedLpTokensList.appendChild(empty);
     return;
@@ -762,8 +770,8 @@ function highlightEditorIssues(issues, rawHeadlines, rawDescriptions) {
     counter.textContent = `${valLen}/30`;
     counter.className =
       valLen > 30
-        ? "counter-badge text-[10px] font-mono font-bold text-rose-600"
-        : "counter-badge text-[10px] font-mono font-medium text-slate-400";
+        ? "counter-badge text-[10px] font-mono font-bold text-rose-700"
+        : "counter-badge text-[10px] font-mono font-medium text-slate-600";
   });
 
   const descRows = elements.descriptionsContainer.querySelectorAll(".description-row");
@@ -784,8 +792,8 @@ function highlightEditorIssues(issues, rawHeadlines, rawDescriptions) {
     counter.textContent = `${valLen}/90`;
     counter.className =
       valLen > 90
-        ? "desc-counter text-[10px] font-mono font-bold text-rose-600"
-        : "desc-counter text-[10px] font-mono font-medium text-slate-400";
+        ? "desc-counter text-[10px] font-mono font-bold text-rose-700"
+        : "desc-counter text-[10px] font-mono font-medium text-slate-600";
   });
 }
 
@@ -1225,7 +1233,7 @@ function renderAuditReport(result, droppedIssues = []) {
       item.innerHTML = `
         <div class="flex items-center space-x-2">
           <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-100 text-rose-700">${escapeHtml(issue.rule_id)}</span>
-          <span class="text-slate-700 font-medium line-through text-slate-400">${escapeHtml(issue.message)}</span>
+          <span class="font-medium line-through text-slate-500">${escapeHtml(issue.message)}</span>
         </div>
         <span class="self-start sm:self-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 shrink-0">
           ${dict.discardedBadge}
@@ -1336,7 +1344,7 @@ function renderAuditReport(result, droppedIssues = []) {
       locHeader.className = "flex items-center justify-between text-[11px] text-slate-600 font-semibold";
       locHeader.innerHTML = `
         <span class="font-mono text-indigo-700 bg-indigo-100 px-1.5 py-0.2 rounded">${locText}</span>
-        <span class="text-slate-400 font-mono text-[10px]">Max: ${
+        <span class="text-slate-500 font-mono text-[10px]">Max: ${
           sugg.location?.field === "description" ? "90" : "30"
         } chars</span>
       `;
