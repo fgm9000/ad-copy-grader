@@ -18,7 +18,7 @@ OUTPUT_FILE = REPO_ROOT / "web" / "examples.json"
 
 
 async def generate_scenario_1() -> dict[str, Any]:
-    """Generate clean 10/10 compliant RSA ad scenario."""
+    """Generate clean 100/100 compliant RSA ad scenario."""
     input_en = AdInput(
         headlines=[
             "Dental Implants Clinic",
@@ -97,8 +97,8 @@ async def generate_scenario_1() -> dict[str, Any]:
     return {
         "id": "clean_10_of_10",
         "label": {
-            "en": "Clean Compliant RSA (10/10)",
-            "pt": "Anúncio Conforme e Limpo (10/10)",
+            "en": "Clean Compliant RSA (100/100)",
+            "pt": "Anúncio Conforme e Limpo (100/100)",
         },
         "description": {
             "en": (

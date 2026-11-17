@@ -35,7 +35,7 @@ Uma API e playground web interativo de auditoria híbrida construídos sobre o p
 1. **Gestor de Tráfego / Copywriter (Demo Web Interativa — Layout Lado a Lado Bilíngue `EN | PT`):**
    - Alterna entre **Inglês (`EN`)** e **Português (`PT`)** no topo da interface.
    - Visualiza **lado a lado** o **Card da Landing Page de Exemplo** (`lp_context`, `primary_service` e `final_url`) e o **Card do Anúncio RSA** (títulos e descrições com contadores `N/30` e `N/90` em tempo real), tornando imediata a compreensão de como o motor cruza as promessas do anúncio com o conteúdo da página sem fazer scraping externo.
-   - Recebe uma **nota de 0.0 a 10.0 (`grade_10`)** (alinhada ao modelo mental do *Quality Score* de 1 a 10 do Google Ads) junto ao `score` de 0 a 100, destaques por campo, selos explícitos de autoridade (`Verificado pelo Código` vs. `Julgado pelo LLM`) e sugestões de substituição já revalidadas.
+   - Recebe o **`score` de 0 a 100**, destaques por campo, selos explícitos de autoridade (`Verificado pelo Código` vs. `Julgado pelo LLM`) e sugestões de substituição já revalidadas.
 2. **Engenheiro de Marketing / Automação de Campanhas (Consumidor da API `POST /v1/grade`):**
    - Envia o anúncio RSA com `"lang": "en"` ou `"lang": "pt"` como *Quality Gate* antes de publicar na Google Ads API.
    - Recebe JSON estritamente tipado (`passed`, `score`, `grade_10`, `issues`, `suggestions`) no idioma solicitado, com degradação graciosa caso o provedor de LLM esteja indisponível.
@@ -88,7 +88,7 @@ Executado via OpenRouter (`google/gemini-2.5-flash` por padrão) em modo JSON, s
 
 ### FR-06: Sistema de Pontuação (0–10 e 0–100) e Critério de Aprovação
 - **Nota Base 100 (`score`):** `max(0, 100 - 15 * errors - 5 * warnings)`
-- **Nota Escala 0 a 10 (`grade_10`):** `round(score / 10, 1)` (ex.: `8.5 / 10.0`, espelhando a escala de 0 a 10 do Google Ads).
+- **Nota Escala 0 a 10 (`grade_10`):** `round(score / 10, 1)` (ex.: `8.5`). Mantida na resposta da API por compatibilidade e oculta no playground. Não é o *Quality Score* do Google Ads, que avalia palavras-chave numa escala de 1 a 10.
 - **Flag de Aprovação (`passed`):** `errors == 0`.
 
 ### FR-07: Degradação Graciosa (Graceful Degradation)

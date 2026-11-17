@@ -69,7 +69,7 @@ flowchart LR
 
 **Scoring Formula:**
 - `score = max(0, 100 - 15 * errors - 5 * warnings)` (`0` to `100`)
-- `grade_10 = round(score / 10, 1)` (`0.0` to `10.0`, aligned with Google Ads' Quality Score scale)
+- `grade_10 = round(score / 10, 1)` (`0.0` to `10.0`). Kept in the API response for compatibility and not shown in the playground. It is not Google Ads' Quality Score, which rates keywords on a 1–10 scale.
 - `passed = (errors == 0)`
 
 ---

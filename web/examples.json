@@ -6,8 +6,8 @@
       "pt": "1. Erros Híbridos: Preço (A01) + Tamanho (D04) + Garantia (A03)"
     },
     "description": {
-      "en": "Default showcase: Headline #2 claims '$499' while the Landing Page states '$899' (Rule A01), Headline #3 exceeds 30 chars (Rule D04), and Headline #4 makes an absolute clinical guarantee (Rule A03). Click 'Apply All Fixes (1-Click)' on the right to watch the score jump from 6.5 REJECTED to 10.0 PASSED!",
-      "pt": "Cenário principal: O Título #2 anuncia 'R$ 499' enquanto a Landing Page informa 'R$ 390' (Regra A01), o Título #3 ultrapassa 30 caracteres (Regra D04) e o Título #4 faz promessa clínica absoluta (Regra A03). Clique em 'Aplicar Todas as Correções (1 Clique)' à direita para ver a nota subir de 6.5 REJECTED para 10.0 PASSED!"
+      "en": "Default showcase: Headline #2 claims '$499' while the Landing Page states '$899' (Rule A01), Headline #3 exceeds 30 chars (Rule D04), and Headline #4 makes an absolute clinical guarantee (Rule A03). Click 'Apply All Fixes (1-Click)' on the right to watch the score jump from 65 REJECTED to 100 PASSED!",
+      "pt": "Cenário principal: O Título #2 anuncia 'R$ 499' enquanto a Landing Page informa 'R$ 390' (Regra A01), o Título #3 ultrapassa 30 caracteres (Regra D04) e o Título #4 faz promessa clínica absoluta (Regra A03). Clique em 'Aplicar Todas as Correções (1 Clique)' à direita para ver a pontuação subir de 65 REJECTED para 100 PASSED!"
     },
     "input": {
       "en": {
@@ -215,12 +215,12 @@
   {
     "id": "clean_10_of_10",
     "label": {
-      "en": "4. Clean Compliant RSA (10/10 Benchmark)",
-      "pt": "4. Anúncio 100% Conforme (Nota 10/10)"
+      "en": "4. Clean Compliant RSA (100/100 Benchmark)",
+      "pt": "4. Anúncio 100% Conforme (Pontuação 100/100)"
     },
     "description": {
-      "en": "Gold-standard 15-headline RSA with verified primary service, compliant character counts (<=30 / <=90), HTTPS URL, and strong CTAs scoring a perfect 10.0.",
-      "pt": "Anúncio modelo com 15 títulos dentro do limite de 30 caracteres, serviço principal presente nos top 5 títulos, URL HTTPS e CTAs claras atingindo nota 10.0."
+      "en": "Gold-standard 15-headline RSA with verified primary service, compliant character counts (<=30 / <=90), HTTPS URL, and strong CTAs scoring a perfect 100/100.",
+      "pt": "Anúncio modelo com 15 títulos dentro do limite de 30 caracteres, serviço principal presente nos top 5 títulos, URL HTTPS e CTAs claras atingindo pontuação 100/100."
     },
     "input": {
       "en": {

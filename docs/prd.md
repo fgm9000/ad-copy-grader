@@ -34,7 +34,7 @@ A hybrid auditing API and interactive web playground built on the principle: **"
 
 1. **Paid Search Manager / Copywriter (Interactive Web Demo — Side-by-Side Layout):**
    - Views the **Landing Page Context Card** (`lp_context`, `primary_service`, and `final_url`) **side by side** with the **RSA Ad Copy Card** (headlines and descriptions with live `N/30` and `N/90` character counters). This makes it immediately clear how the engine cross-checks ad claims against landing page content without performing external web scraping.
-   - Receives a **0.0 to 10.0 quality grade (`grade_10`)** (aligned with Google Ads' native 1–10 Quality Score mental model) alongside a 0–100 `score`, field-level issue highlights, explicit authority badges (`Code Verified (Deterministic)` vs. `LLM Judged (Semantic)`), and pre-validated rewrite suggestions.
+   - Receives a **0–100 `score`**, field-level issue highlights, explicit authority badges (`Code Verified (Deterministic)` vs. `LLM Judged (Semantic)`), and pre-validated rewrite suggestions.
 2. **Marketing Engineer / Campaign Automation Pipeline (`POST /v1/grade` API Consumer):**
    - Integrates the endpoint as a pre-publish quality gate before submitting RSAs to the Google Ads API.
    - Receives a strictly typed JSON payload (`passed`, `score`, `grade_10`, `issues`, `suggestions`) with graceful degradation if the upstream LLM provider times out or fails.
@@ -87,7 +87,7 @@ Executed via OpenRouter (`google/gemini-2.5-flash` by default) in JSON mode:
 
 ### FR-06: Scoring System (0–10 and 0–100) & Pass Criteria
 - **100-Point Score (`score`):** `max(0, 100 - 15 * errors - 5 * warnings)`
-- **10-Point Grade (`grade_10`):** `round(score / 10, 1)` (e.g., `8.5 / 10.0`, mirroring Google Ads' 0–10 scale).
+- **10-Point Grade (`grade_10`):** `round(score / 10, 1)` (e.g., `8.5`). Kept in the API response for compatibility and not shown in the playground. It is not Google Ads' Quality Score, which rates keywords on a 1–10 scale.
 - **Pass Flag (`passed`):** `errors == 0`.
 
 ### FR-07: Graceful Degradation
