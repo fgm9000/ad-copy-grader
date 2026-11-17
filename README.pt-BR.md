@@ -69,7 +69,7 @@ flowchart LR
 
 **Fórmula de Pontuação:**
 - `score = max(0, 100 - 15 * errors - 5 * warnings)` (`0` a `100`)
-- `grade_10 = round(score / 10, 1)` (`0.0` a `10.0`, alinhada ao *Quality Score* do Google Ads)
+- `grade_10 = round(score / 10, 1)` (`0.0` a `10.0`). Mantida na resposta da API por compatibilidade e oculta no playground. Não é o *Quality Score* do Google Ads, que avalia palavras-chave numa escala de 1 a 10.
 - `passed = (errors == 0)`
 
 ---

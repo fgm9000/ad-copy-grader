@@ -28,7 +28,7 @@ const TRANSLATIONS = {
       "Notice how Landing Page prices (left, e.g. <strong>$899</strong>) are highlighted and cross-checked against RSA Headlines (center), flagging unverified claims (<strong>[A01]</strong>) and length overflows (<strong>[D04]</strong>) in red.",
     step2Title: "2. Click 'Apply All Fixes (1-Click)'",
     step2Desc:
-      "Click <strong>'✨ Apply All Validated Fixes'</strong> on the right (or individual 'Apply Rewrite' buttons) to fix every issue in 1 click and watch the score jump from <strong>6.5 REJECTED</strong> to <strong>10.0 PASSED</strong>!",
+      "Click <strong>'✨ Apply All Validated Fixes'</strong> on the right (or individual 'Apply Rewrite' buttons) to fix every issue in 1 click and watch the score jump from <strong>65 REJECTED</strong> to <strong>100 PASSED</strong>!",
     step3Title: "3. Test Scenario #2 & Live Cloud Run API",
     step3Desc:
       "Switch to <strong>Scenario 2</strong> to see the <strong>Code Authority Filter</strong> block an LLM false positive, or click <strong>'☁️ Verify on Cloud Run API'</strong> to inspect the live FastAPI JSON response.",
@@ -53,10 +53,9 @@ const TRANSLATIONS = {
     resetScenarioBtn: "Reset Scenario",
     gradeAdBtn: "Re-evaluate Ad Copy",
     auditReportTitle: "Hybrid Audit Report",
-    qualityScaleLabel: "Google Ads Quality",
     scoreLabel: "Score",
-    fixAllBtnText: "✨ Apply All Validated Fixes (1-Click → 10.0 Score)",
-    fixAllAppliedText: "✅ All Fixes Applied! Score: 10.0 PASSED",
+    fixAllBtnText: "✨ Apply All Validated Fixes (1-Click → Score 100)",
+    fixAllAppliedText: "✅ All Fixes Applied! Score: 100 PASSED",
     rulesCheckedBadge: "11 Code Rules (D01-D11) + 3 LLM (A01-A03)",
     authorityFilterTitle: "Code Authority Filter Active",
     falsePositiveStrippedBadge: "False Positive Intercepted",
@@ -87,7 +86,7 @@ const TRANSLATIONS = {
     archCard4Body:
       "validate_suggestions() re-audits every LLM rewrite against rules D04/D05/D08/D09/D10; non-compliant rewrites are discarded before reaching the user. Validated with a 3-column Promptfoo evaluation suite (raw vs. pipeline vs. degraded) and CI gates: ruff, mypy --strict, pytest (100% coverage), Semgrep OWASP Top 10, and CodeQL.",
     footerText: "Ad Copy Grader — Deterministic Google Ads rules engine & LLM semantic audit.",
-    perfectScoreText: "🎉 Perfect 10.0 score! All 14 deterministic and semantic rules passed.",
+    perfectScoreText: "🎉 Perfect 100/100 score! All 14 deterministic and semantic rules passed.",
     codeProvenance: "Code Verified (Deterministic)",
     llmProvenance: "LLM Judged (Semantic)",
     severityError: "ERROR",
@@ -113,7 +112,7 @@ const TRANSLATIONS = {
       "Repare como os preços da Landing Page (à esquerda, ex.: <strong>R$ 390</strong>) ficam destacados e são cruzados contra os Títulos RSA (centro), marcando preços divergentes (<strong>[A01]</strong>) e limites estourados (<strong>[D04]</strong>) em vermelho.",
     step2Title: "2. Clique em 'Aplicar Todas as Correções'",
     step2Desc:
-      "Clique em <strong>'✨ Aplicar Todas as Correções (1 Clique)'</strong> à direita (ou nos botões individuais) para corrigir tudo instantaneamente e ver a nota saltar de <strong>6.5 REJECTED</strong> para <strong>10.0 PASSED</strong>!",
+      "Clique em <strong>'✨ Aplicar Todas as Correções (1 Clique)'</strong> à direita (ou nos botões individuais) para corrigir tudo instantaneamente e ver a pontuação saltar de <strong>65 REJECTED</strong> para <strong>100 PASSED</strong>!",
     step3Title: "3. Teste o Cenário #2 e a API Cloud Run",
     step3Desc:
       "Mude para o <strong>Cenário 2</strong> para ver o <strong>Filtro de Autoridade</strong> bloquear um falso positivo do LLM, ou clique em <strong>'☁️ Validar na API Cloud Run'</strong> para inspecionar o JSON real do FastAPI.",
@@ -138,10 +137,9 @@ const TRANSLATIONS = {
     resetScenarioBtn: "Restaurar Cenário",
     gradeAdBtn: "Reavaliar Anúncio",
     auditReportTitle: "Relatório de Auditoria Híbrida",
-    qualityScaleLabel: "Qualidade Google Ads",
     scoreLabel: "Pontuação",
-    fixAllBtnText: "✨ Aplicar Todas as Correções (1 Clique → Nota 10.0)",
-    fixAllAppliedText: "✅ Correções Aplicadas! Nota: 10.0 PASSED",
+    fixAllBtnText: "✨ Aplicar Todas as Correções (1 Clique → Pontuação 100)",
+    fixAllAppliedText: "✅ Correções Aplicadas! Pontuação: 100 PASSED",
     rulesCheckedBadge: "11 Regras de Código (D01-D11) + 3 LLM (A01-A03)",
     authorityFilterTitle: "Filtro de Autoridade Ativo",
     falsePositiveStrippedBadge: "Falso Positivo Interceptado",
@@ -172,7 +170,7 @@ const TRANSLATIONS = {
     archCard4Body:
       "validate_suggestions() re-audita cada sugestão do LLM contra as regras D04/D05/D08/D09/D10; sugestões fora do limite são descartadas. Validado com suíte Promptfoo em 3 colunas (raw vs. pipeline vs. degraded) e gates de CI: ruff, mypy --strict, pytest (100% cobertura), Semgrep OWASP Top 10 e CodeQL.",
     footerText: "Ad Copy Grader — Motor de regras determinísticas Google Ads e auditoria semântica LLM.",
-    perfectScoreText: "🎉 Nota 10.0 perfeita! Todas as 14 regras determinísticas e semânticas foram aprovadas.",
+    perfectScoreText: "🎉 Pontuação 100/100 perfeita! Todas as 14 regras determinísticas e semânticas foram aprovadas.",
     codeProvenance: "Verificado via Código",
     llmProvenance: "Julgado via LLM (Semântico)",
     severityError: "ERRO",
@@ -222,7 +220,6 @@ const elements = {
   gradeAdBtn: document.getElementById("gradeAdBtn"),
   gradeBtnText: document.getElementById("gradeBtnText"),
   statusPassBadge: document.getElementById("statusPassBadge"),
-  heroGrade10: document.getElementById("heroGrade10"),
   heroScore: document.getElementById("heroScore"),
   heroFixAllContainer: document.getElementById("heroFixAllContainer"),
   fixAllHeroBtn: document.getElementById("fixAllHeroBtn"),
@@ -1197,19 +1194,18 @@ function runLiveEvaluation(highlightAnimation = false) {
 function renderAuditReport(result, droppedIssues = []) {
   const dict = TRANSLATIONS[state.lang];
 
-  elements.heroGrade10.textContent = (result.grade_10 !== undefined ? result.grade_10 : 0.0).toFixed(1);
   elements.heroScore.textContent = result.score !== undefined ? result.score : 0;
 
   if (result.passed) {
     elements.statusPassBadge.className =
       "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800";
     elements.statusPassBadge.textContent = "PASSED";
-    elements.heroScore.className = "text-2xl sm:text-3xl font-extrabold text-emerald-600";
+    elements.heroScore.className = "text-3xl sm:text-4xl font-extrabold text-emerald-600 tracking-tight";
   } else {
     elements.statusPassBadge.className =
       "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-800";
     elements.statusPassBadge.textContent = "REJECTED";
-    elements.heroScore.className = "text-2xl sm:text-3xl font-extrabold text-rose-600";
+    elements.heroScore.className = "text-3xl sm:text-4xl font-extrabold text-rose-600 tracking-tight";
   }
 
   // Show/hide 1-Click Fix All Hero Button
