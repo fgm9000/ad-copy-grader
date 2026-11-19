@@ -37,7 +37,7 @@ jobs:
           EVAL_CONFIG: ${{ inputs.suite == 'holdout' && 'promptfooconfig.holdout.yaml' || inputs.suite == 'holdout_v2' && 'promptfooconfig.holdout2.yaml' || inputs.suite == 'holdout_v3' && 'promptfooconfig.holdout3.yaml' || 'promptfooconfig.yaml' }}
       - name: Upload Evaluation Results Artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: promptfoo-live-results
           path: promptfoo-live-results.json
